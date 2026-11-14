@@ -29,7 +29,11 @@
   const actual = $derived(run ? actualStatus(run) : null)
 </script>
 
-<Card title="Result" {meta}>
+<Card
+  title="Result"
+  {meta}
+  info="The response status and a plain-language explanation of what happened."
+>
   <div class="card-body">
     {#if !sent}
       <div class="notice">

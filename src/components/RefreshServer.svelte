@@ -1,63 +1,35 @@
 <script lang="ts">
-  import type { RefreshModeId, RefreshPhase, Task } from '../engine/types'
+  import type { RefreshModeId, RefreshPhase } from '../engine/types'
   import type { RequestLogEntry } from '../engine/refresh.svelte'
   import { statusLabel } from '../engine/composer'
   import Card from './Card.svelte'
 
   let {
     modeId,
-    tasks,
     requests,
-    lastAddedId,
     phase,
   }: {
     modeId: RefreshModeId
-    tasks: Task[]
     requests: RequestLogEntry[]
-    lastAddedId: number | null
     phase: RefreshPhase
   } = $props()
-
-  const meta = $derived(
-    modeId === 'api' ? 'Fake server + database' : 'Not used',
-  )
 </script>
 
-<Card title="Backend" {meta}>
+<Card
+  title="Server"
+  meta="Backend"
+  info="The backend in this test. It receives POST /tasks when you add a task and GET /tasks when the page reloads."
+>
   <div class="card-body">
     {#if modeId === 'browser'}
       <div class="notice">
-        No backend in this mode. The tasks live only in this tab's memory.
+        No backend in this mode. Tasks live only in the browser tab, so there
+        is no API and no request log.
       </div>
       <p class="hint">
-        Switch to “Through the API and database” to see the stored rows.
+        Switch to “Through the API and database” to send requests.
       </p>
     {:else}
-      <div class="refresh-db">
-        <span class="lbl">Table: tasks</span>
-        <table class="db-table">
-          <thead>
-            <tr>
-              <th class="col-id">id</th>
-              <th>title</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each tasks as task (task.id)}
-              <tr class:row-new={lastAddedId === task.id}>
-                <td class="mono">{task.id}</td>
-                <td>{task.title}</td>
-              </tr>
-            {/each}
-            {#if tasks.length === 0}
-              <tr>
-                <td class="db-empty" colspan="2">No rows yet.</td>
-              </tr>
-            {/if}
-          </tbody>
-        </table>
-      </div>
-
       <div class="backend-log">
         <span class="lbl">Requests</span>
         {#if requests.length === 0}

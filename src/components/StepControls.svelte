@@ -34,7 +34,11 @@
   } = $props()
 </script>
 
-<Card {title} {meta}>
+<Card
+  {title}
+  {meta}
+  info="Follow the request one stage at a time. Step and Back move through the stages; auto-play advances automatically."
+>
   <div class="card-body">
     <div class="progress" aria-hidden="true">
       {#each Array.from({ length: total }) as _, index}

@@ -13,17 +13,14 @@
     active: boolean
     payload: Payload | null
   } = $props()
-
-  const meta = $derived(
-    view.status === 'offline'
-      ? 'Offline'
-      : view.status === 'blocked'
-        ? 'Not reached'
-        : 'Node',
-  )
 </script>
 
-<Card index="3" title="Server code" {meta} {active}>
+<Card
+  title="Server handler"
+  meta="Server · handler"
+  info="The backend function that runs your code. It reads the request, validates it, and talks to the database."
+  {active}
+>
   <div class="card-body code-body">
     {#if payload}
       <div class="code-payload">

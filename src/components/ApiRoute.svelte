@@ -2,6 +2,7 @@
   import type { ApiView } from '../engine/view'
   import type { Payload } from '../engine/types'
   import Card from './Card.svelte'
+  import InfoTip from './InfoTip.svelte'
   import PayloadToken from './PayloadToken.svelte'
 
   let {
@@ -24,14 +25,25 @@
   }
 </script>
 
-<Card index="2" title="API route" meta="HTTP" {active}>
+<Card
+  title="API router"
+  meta="Server · routing"
+  info="The first part of the backend. It matches the HTTP method and path to a handler."
+  {active}
+>
   <div class="card-body">
     {#if payload}
       <PayloadToken {payload} />
     {/if}
 
     <div class="api-block">
-      <span class="lbl">Request</span>
+      <div class="label-row">
+        <span class="lbl">Request</span>
+        <InfoTip
+          text="The HTTP request the browser sent: method, path, headers, and optional JSON body."
+          label="About the HTTP request"
+        />
+      </div>
       {#if view.request}
         <div class="request mono">
           <b>{view.request.method} {view.request.path}</b><br />
@@ -67,7 +79,13 @@
     </div>
 
     <div class="api-block">
-      <span class="lbl">Response</span>
+      <div class="label-row">
+        <span class="lbl">Response</span>
+        <InfoTip
+          text="The HTTP response from the server: a status code and an optional JSON body."
+          label="About the HTTP response"
+        />
+      </div>
       {#if view.response}
         <div class="response">
           <div class="row spread">

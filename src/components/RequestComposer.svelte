@@ -42,10 +42,14 @@
     onPreset: (preset: ComposerPreset) => void
   } = $props()
 
-  const meta = $derived(sent ? 'Sent' : 'Ready')
+  const meta = $derived(`Client · ${sent ? 'Sent' : 'Ready'}`)
 </script>
 
-<Card title="Request composer" {meta}>
+<Card
+  title="Request composer"
+  {meta}
+  info="The client-side form you control. It builds an HTTP request and sends it from the browser tab."
+>
   <div class="card-body">
     <p class="composer-intro">
       You are the client.

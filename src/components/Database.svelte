@@ -15,7 +15,12 @@
   } = $props()
 </script>
 
-<Card index="4" title="Database" meta="Table: tasks" {active}>
+<Card
+  title="Tasks table"
+  meta="Database · server only"
+  info="The tasks table inside the database. Only the server connects here; the browser reloads rows through the API."
+  {active}
+>
   {#if payload}
     <div class="db-payload">
       <PayloadToken {payload} />

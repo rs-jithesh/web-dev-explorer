@@ -38,6 +38,7 @@
 <Card
   title={showPrediction ? 'Before you refresh' : 'Refresh the page'}
   {meta}
+  info="Refresh clears the browser's JavaScript state. In API mode the list is then reloaded from the database."
 >
   <div class="card-body">
     {#if showPrediction}

@@ -3,8 +3,12 @@
   import type { RefreshConfig } from '../engine/types'
   import { RefreshTestStore } from '../engine/refresh.svelte'
   import { SHOW_PREDICTIONS } from '../engine/features'
+  import InfoTip from './InfoTip.svelte'
+  import Zone from './Zone.svelte'
+  import ZoneBoundary from './ZoneBoundary.svelte'
   import RefreshBrowser from './RefreshBrowser.svelte'
-  import RefreshBackend from './RefreshBackend.svelte'
+  import RefreshServer from './RefreshServer.svelte'
+  import RefreshDatabase from './RefreshDatabase.svelte'
   import RefreshPrediction from './RefreshPrediction.svelte'
   import RefreshResult from './RefreshResult.svelte'
 
@@ -46,38 +50,60 @@
 </script>
 
 <div class="refresh-test">
-  <div class="refresh-modes" role="group" aria-label="Refresh test mode">
-    {#each config.modes as mode (mode.id)}
-      <button
-        class="mode-btn"
-        class:active={test.modeId === mode.id}
-        type="button"
-        aria-pressed={test.modeId === mode.id}
-        onclick={() => test.selectMode(mode.id)}
-      >
-        {mode.label}
-      </button>
-    {/each}
+  <div class="refresh-mode-head">
+    <div class="refresh-modes" role="group" aria-label="Refresh test mode">
+      {#each config.modes as mode (mode.id)}
+        <button
+          class="mode-btn"
+          class:active={test.modeId === mode.id}
+          type="button"
+          aria-pressed={test.modeId === mode.id}
+          onclick={() => test.selectMode(mode.id)}
+        >
+          {mode.label}
+        </button>
+      {/each}
+    </div>
+    <InfoTip
+      text="Browser-only keeps tasks in the tab's memory. API mode sends them to the server and stores them in the database."
+      label="About the refresh modes"
+    />
   </div>
   <p class="refresh-mode-desc">{test.mode.description}</p>
 
-  <div class="refresh-grid">
-    <RefreshBrowser
-      tasks={test.browserTasks}
-      input={test.input}
-      phase={test.phase}
-      inputError={test.inputError}
-      lastAddedId={test.lastAddedId}
-      onInput={(value) => (test.input = value)}
-      onAdd={() => test.addTask()}
-    />
-    <RefreshBackend
-      modeId={test.modeId}
-      tasks={test.dbTasks}
-      requests={test.requests}
-      lastAddedId={test.lastAddedId}
-      phase={test.phase}
-    />
+  <div class="zones">
+    <Zone kind="client">
+      <RefreshBrowser
+        tasks={test.browserTasks}
+        input={test.input}
+        phase={test.phase}
+        inputError={test.inputError}
+        lastAddedId={test.lastAddedId}
+        onInput={(value) => (test.input = value)}
+        onAdd={() => test.addTask()}
+      />
+    </Zone>
+
+    <ZoneBoundary kind="http" />
+
+    <Zone kind="server">
+      <RefreshServer
+        modeId={test.modeId}
+        requests={test.requests}
+        phase={test.phase}
+      />
+    </Zone>
+
+    <ZoneBoundary kind="db" />
+
+    <Zone kind="database">
+      <RefreshDatabase
+        modeId={test.modeId}
+        tasks={test.dbTasks}
+        lastAddedId={test.lastAddedId}
+        phase={test.phase}
+      />
+    </Zone>
   </div>
 
   <div class="refresh-lower" bind:this={predictionEl}>

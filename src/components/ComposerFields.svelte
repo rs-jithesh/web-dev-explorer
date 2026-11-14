@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Method } from '../engine/types'
+  import InfoTip from './InfoTip.svelte'
 
   let {
     method,
@@ -26,7 +27,13 @@
 
 <div class="composer-row">
   <div class="composer-field method-field">
-    <label class="lbl" for="composer-method">Method</label>
+    <div class="label-row">
+      <label class="lbl" for="composer-method">Method</label>
+      <InfoTip
+        text="The HTTP method. GET asks for data, POST creates data, DELETE removes data."
+        label="About the HTTP method"
+      />
+    </div>
     <select
       id="composer-method"
       class="select-input"
@@ -41,7 +48,13 @@
   </div>
 
   <div class="composer-field path-field">
-    <label class="lbl" for="composer-path">Path</label>
+    <div class="label-row">
+      <label class="lbl" for="composer-path">Path</label>
+      <InfoTip
+        text="The URL path the API router matches, such as /tasks."
+        label="About the path"
+      />
+    </div>
     <input
       id="composer-path"
       class="text-input path-input"
@@ -55,12 +68,24 @@
 </div>
 
 <div class="endpoint-preview">
-  <span class="lbl">Endpoint</span>
+  <div class="label-row">
+    <span class="lbl">Endpoint</span>
+    <InfoTip
+      text="The method plus the full URL the browser calls, such as POST localhost:5173/tasks."
+      label="About the endpoint"
+    />
+  </div>
   <code class="endpoint-value">{endpoint}</code>
 </div>
 
 <div class="composer-field">
-  <label class="lbl" for="composer-body">JSON body</label>
+  <div class="label-row">
+    <label class="lbl" for="composer-body">JSON body</label>
+    <InfoTip
+      text="JSON is a text format for structured data. The server parses it into a JavaScript object."
+      label="About the JSON body"
+    />
+  </div>
   <textarea
     id="composer-body"
     class="body-input"

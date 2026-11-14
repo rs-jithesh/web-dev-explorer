@@ -23,7 +23,11 @@
   const editing = $derived(phase === 'editing')
 </script>
 
-<Card title="Browser" meta="Frontend">
+<Card
+  title="Browser app"
+  meta="Client"
+  info="The page the user sees. In browser-only mode tasks live here; in API mode the list is reloaded from the server."
+>
   <div class="card-body">
     <div class="url-pill">localhost:5173/todo</div>
 

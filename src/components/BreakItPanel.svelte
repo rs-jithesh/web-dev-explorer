@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Scenario } from '../engine/types'
+  import InfoTip from './InfoTip.svelte'
 
   let {
     scenarios,
@@ -23,6 +24,14 @@
   </summary>
 
   <div class="breakit-body">
+    <div class="breakit-info">
+      <InfoTip
+        text="Break it sends a deliberately bad request so you can see where it stops. Everything is simulated and safe."
+        label="About Break it"
+      />
+      <span class="hint">Deliberately bad requests are safe here.</span>
+    </div>
+
     {#each scenarios as scenario (scenario.id)}
       <button
         class="btn btn-sm"

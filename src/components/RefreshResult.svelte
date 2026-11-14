@@ -29,7 +29,11 @@
   )
 </script>
 
-<Card title="Result" {meta}>
+<Card
+  title="Result"
+  {meta}
+  info="What happened after the reload and why the tasks did or did not survive."
+>
   <div class="card-body">
     {#if phase === 'editing'}
       <div class="notice">Add a task, then press Refresh.</div>

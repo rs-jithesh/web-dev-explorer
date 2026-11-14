@@ -27,7 +27,12 @@
   } = $props()
 </script>
 
-<Card index="1" title="Browser" meta="Frontend" {active}>
+<Card
+  title="Browser app"
+  meta="Client"
+  info="The page the user sees. It runs in the browser tab and calls the server with HTTP requests."
+  {active}
+>
   <div class="card-body">
     {#if payload}
       <PayloadToken {payload} />

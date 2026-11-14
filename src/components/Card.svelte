@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte'
+  import InfoTip from './InfoTip.svelte'
 
   let {
     index = '',
@@ -7,6 +8,7 @@
     meta = '',
     active = false,
     highlight = false,
+    info = '',
     children,
   }: {
     index?: string
@@ -14,6 +16,7 @@
     meta?: string
     active?: boolean
     highlight?: boolean
+    info?: string
     children: Snippet
   } = $props()
 </script>
@@ -25,7 +28,12 @@
   aria-label={`${index} ${title}`.trim()}
 >
   <header class="card-head">
-    <span>{index ? `${index} · ${title}` : title}</span>
+    <span class="card-title">
+      {index ? `${index} · ${title}` : title}
+      {#if info}
+        <InfoTip text={info} label={`About ${title}`} />
+      {/if}
+    </span>
     {#if active}
       <span class="pill">Active</span>
     {:else if meta}

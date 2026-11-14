@@ -10,6 +10,8 @@
   import RequestComposer from './components/RequestComposer.svelte'
   import ResultPanel from './components/ResultPanel.svelte'
   import RefreshTest from './components/RefreshTest.svelte'
+  import Zone from './components/Zone.svelte'
+  import ZoneBoundary from './components/ZoneBoundary.svelte'
   import { tick } from 'svelte'
   import { lessons } from './lessons'
   import { Player } from './engine/player.svelte'
@@ -262,59 +264,75 @@
     {#if lesson.refresh}
       <RefreshTest config={lesson.refresh} />
     {:else}
-      {#if isComposer}
-        <div bind:this={composerEl}>
-          <RequestComposer
-            method={player.composerMethod}
-            path={player.composerPath}
-            body={player.composerBody}
-            status={player.composerStatus}
-            sent={player.composerSent}
-            validation={player.composerValidation}
-            presets={lesson.composer?.presets ?? []}
-            actualStatus={player.composerActualStatus}
-            finished={player.statusFinished}
-            showPrediction={SHOW_PREDICTIONS}
-            onMethod={(method) => player.setComposerMethod(method)}
-            onPath={(path) => player.setComposerPath(path)}
-            onBody={(body) => player.setComposerBody(body)}
-            onStatus={(status) => player.setComposerStatus(status)}
-            onSend={handleSend}
-            onPreset={(preset) => player.applyComposerPreset(preset)}
-          />
-        </div>
-      {/if}
+      <div class="zones" bind:this={flowEl} tabindex="-1">
+        <Zone kind="client">
+          <div class="client-zone-grid" class:single={!isComposer}>
+            {#if isComposer}
+              <div bind:this={composerEl}>
+                <RequestComposer
+                  method={player.composerMethod}
+                  path={player.composerPath}
+                  body={player.composerBody}
+                  status={player.composerStatus}
+                  sent={player.composerSent}
+                  validation={player.composerValidation}
+                  presets={lesson.composer?.presets ?? []}
+                  actualStatus={player.composerActualStatus}
+                  finished={player.statusFinished}
+                  showPrediction={SHOW_PREDICTIONS}
+                  onMethod={(method) => player.setComposerMethod(method)}
+                  onPath={(path) => player.setComposerPath(path)}
+                  onBody={(body) => player.setComposerBody(body)}
+                  onStatus={(status) => player.setComposerStatus(status)}
+                  onSend={handleSend}
+                  onPreset={(preset) => player.applyComposerPreset(preset)}
+                />
+              </div>
+            {/if}
 
-      <div class="flow" bind:this={flowEl} tabindex="-1">
-        <Browser
-          view={view.browser}
-          active={view.active === 'browser'}
-          title={isComposer ? '' : player.title}
-          editable={!isComposer && player.isMain && player.stepIndex < 0}
-          canTrigger={!isComposer && player.canTrigger}
-          showControls={!isComposer}
-          payload={payload?.box === 'browser' ? payload : null}
-          onTitle={(value) => player.editTitle(value)}
-          onTrigger={handleTrigger}
-        />
-        <FlowArrow />
-        <ApiRoute
-          view={view.api}
-          active={view.active === 'api'}
-          payload={payload?.box === 'api' ? payload : null}
-        />
-        <FlowArrow />
-        <ServerCode
-          view={view.server}
-          active={view.active === 'server'}
-          payload={payload?.box === 'server' ? payload : null}
-        />
-        <FlowArrow />
-        <Database
-          view={view.database}
-          active={view.active === 'database'}
-          payload={payload?.box === 'database' ? payload : null}
-        />
+            <Browser
+              view={view.browser}
+              active={view.active === 'browser'}
+              title={isComposer ? '' : player.title}
+              editable={!isComposer && player.isMain && player.stepIndex < 0}
+              canTrigger={!isComposer && player.canTrigger}
+              showControls={!isComposer}
+              payload={payload?.box === 'browser' ? payload : null}
+              onTitle={(value) => player.editTitle(value)}
+              onTrigger={handleTrigger}
+            />
+          </div>
+        </Zone>
+
+        <ZoneBoundary kind="http" />
+
+        <Zone kind="server">
+          <div class="server-zone-grid">
+            <ApiRoute
+              view={view.api}
+              active={view.active === 'api'}
+              payload={payload?.box === 'api' ? payload : null}
+            />
+            <div class="server-arrow" aria-hidden="true">
+              <FlowArrow />
+            </div>
+            <ServerCode
+              view={view.server}
+              active={view.active === 'server'}
+              payload={payload?.box === 'server' ? payload : null}
+            />
+          </div>
+        </Zone>
+
+        <ZoneBoundary kind="db" />
+
+        <Zone kind="database">
+          <Database
+            view={view.database}
+            active={view.active === 'database'}
+            payload={payload?.box === 'database' ? payload : null}
+          />
+        </Zone>
       </div>
 
       <div

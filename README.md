@@ -4,6 +4,8 @@ A tiny interactive tool that teaches how a web app works by following one reques
 
 The main lesson gives the learner a real request composer. They choose a method, path and JSON body and send it. The walkthrough is generated from what the fake server actually did. The remaining lessons keep their scripted walkthroughs and **Break it** cases, and a final refresh test shows why the backend and database exist.
 
+The layout separates the **client/browser** (blue), **server/backend** (ink) and **database** (amber) into three stacked zones, with labelled HTTP and database boundaries. Technical terms have an info icon that opens a plain-language explanation; the icons are keyboard reachable.
+
 Prediction and lock-in UI is currently hidden behind `SHOW_PREDICTIONS = false`; Add, Reload, Send and Refresh run immediately. See [Prediction UI](#prediction-ui).
 
 ## Run it
@@ -36,16 +38,19 @@ The first deployment can take a minute. The site will be available at `https://<
 ## What is in version one
 
 - Five lessons: Add a task, Load the list, When things fail, Who talks to the database, and What survives a refresh?
+- The UI is split into three stacked zones: **Client / browser** (the composer and app UI), **Server / backend** (the API router and server handler) and **Database** (the tasks table). The HTTP request/response boundary and the server-only database connection are labelled between them.
 - Lesson 1 uses the request composer: method (GET/POST/DELETE), path, JSON body, and Send. An Endpoint line shows the effective method and URL as the learner edits.
 - The composer walkthrough auto-plays from the real response at 4 seconds per step. Step and Back pause it for slow-motion inspection.
+- Technical terms have info icons: the client, server and database zones, each card, HTTP requests and responses, methods, paths, endpoints, JSON, refresh modes, and the result. Clicking or tapping an icon opens a short explanation in an accessible popover.
 - A payload token follows the data through the pipeline, changing from form text to request JSON, a server object, a table row, response JSON and a list item.
 - The composer presets cover a valid POST, GET, empty title, invalid JSON, unknown path and wrong method.
 - Lessons 2–4 keep their scripted walkthroughs. Add or Reload starts the request immediately; prediction UI is hidden.
 - Seven-step (or shorter) walkthroughs with an active card, highlighted server line, database query and live JSON response.
 - A collapsible Break it panel on the scripted lessons, with 400, 404, server-off and direct-database cases.
 - The refresh test has two modes: **Browser only** and **Through the API and database**. The learner adds tasks, then presses Refresh; browser-only tasks vanish, while API-backed tasks reload with GET /tasks.
-- The API mode shows the persisted database rows and a request log, so the reload is visibly backed by data rather than a cached list.
-- Keyboard-reachable controls and an `aria-live` announcement of the active box and final result.
+- The refresh test uses the same zone model. The browser app is in the client zone; the server request log and the persisted tasks table are separate Server and Database cards. Browser-only mode shows the server and database zones as unused instead of hiding the distinction.
+- API mode shows the persisted database rows and every POST/GET, so the reload is visibly backed by data rather than a cached list.
+- Keyboard-reachable controls, keyboard-reachable info icons, and an `aria-live` announcement of the active box and final result.
 
 ## Prediction UI
 
@@ -99,6 +104,7 @@ src/
     player.svelte.ts         player and composer store
     refresh.svelte.ts        refresh-test state, fake POST/GET calls and request log
     features.ts              temporary feature flags (predictions are currently off)
+    zones.ts                 shared zone and boundary teaching copy
   lessons/
     lesson1.ts ... lesson5.ts
     index.ts
@@ -118,9 +124,13 @@ src/
     BreakItPanel.svelte
     RefreshTest.svelte
     RefreshBrowser.svelte
-    RefreshBackend.svelte
+    RefreshServer.svelte
+    RefreshDatabase.svelte
     RefreshPrediction.svelte
     RefreshResult.svelte
+    InfoTip.svelte
+    Zone.svelte
+    ZoneBoundary.svelte
     Card.svelte
     FlowArrow.svelte
 ```
@@ -140,7 +150,11 @@ The UI should stay lesson-agnostic. If a lesson needs custom UI code, the data s
 ## Design decisions
 
 - The visual direction follows the supplied `First Screen` mockup: warm off-white background, Inter and JetBrains Mono, blue accent, rounded cards and a subtle glow on the active card.
-- Lesson 1 puts the composer above the flow so the learner starts by sending a request, not by pressing a dead button.
+- The page is organised as three stacked zones with subtle accents: client/browser (blue), server/backend (ink) and database (amber). The composer sits in the client zone beside the browser app; the API router and server handler share the server zone; the tasks table sits alone in the database zone.
+- The boundaries are explicit teaching moments: **HTTP request / response** between client and server, and **Database connection · server only** between server and database.
+- Technical terms use a small info icon that opens a native popover. The popover is in the top layer, so it is never clipped by a card; it works with mouse, touch and keyboard, and closes with Escape or the Close button.
+- The database card is called **Tasks table** so it is distinct from the **Database** zone, both visually and as an accessible landmark.
+- Lesson 1 puts the composer inside the client zone, beside the browser app, so the learner starts by sending a request while seeing both client-side pieces together.
 - When `SHOW_PREDICTIONS` is enabled, the status prediction is required before Send. Pressing Send without one shows “Choose the status you expect first.” and focuses the first option.
 - The composer auto-plays at 4 seconds per step. Pressing Step or Back pauses auto-play and switches to manual inspection.
 - The payload token is rendered in the card for the layer that currently owns the data, so it visibly crosses from browser to API to server to database and back.
@@ -148,10 +162,10 @@ The UI should stay lesson-agnostic. If a lesson needs custom UI code, the data s
 - Composer presets are lesson data, not hand-written buttons in the UI.
 - The refresh test is a separate state machine because it is about persistence across requests, not one request walkthrough. Switching modes resets the test and the simulated database.
 - When predictions are enabled, the refresh test asks for a prediction before Refresh. The two-sentence explanation appears only after the reload, so the result is not spoiled.
-- Browser-only mode has no backend card controls and no request log. API mode shows the stored rows and every POST/GET, including the GET /tasks reload.
+- Browser-only mode shows the Server and Database cards as unused, with no request log or rows. API mode splits the request log and the stored rows into separate Server and Database cards, so the learner can see that the reload goes through the backend to persisted data.
 - Lessons 2–4 keep the mockup's Back button, segmented progress bar and Break it panel.
-- Scripted break-it scenarios are locked until the learner locks in a prediction, so the predict-before-reveal rule is enforced.
-- Clicking Add (or Reload in Lesson 2) without a locked guess highlights the prediction and focuses the first option. Locking in starts the request and returns focus to the flow; locking in manually leaves the learner in control of Step.
-- The lock button is never a dead control: pressing it without an answer shows “Choose an answer first.”
+- When predictions are enabled, scripted break-it scenarios are locked until the learner locks in a prediction, so the predict-before-reveal rule is enforced.
+- When predictions are enabled, clicking Add (or Reload in Lesson 2) without a locked guess highlights the prediction and focuses the first option. Locking in starts the request and returns focus to the flow; locking in manually leaves the learner in control of Step.
+- When predictions are enabled, the lock button is never a dead control: pressing it without an answer shows “Choose an answer first.”
 - Returning from a break-it case restores the main flow at the step and title where the learner left it.
 - Reset returns the whole lesson to its starting state, clears the composer result and unlocks the prediction again.
