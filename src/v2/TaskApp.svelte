@@ -6,7 +6,11 @@
     tasks,
     input,
     onInput,
-    onAdd,
+    onAction,
+    mode = 'add',
+    buttonLabel = 'Add',
+    appTitle = APP_COPY.appTitle,
+    appSubtitle = APP_COPY.appSubtitle,
     pendingTitle = null,
     error = '',
     compact = false,
@@ -16,7 +20,11 @@
     tasks: Task[]
     input: string
     onInput: (value: string) => void
-    onAdd: () => void
+    onAction: () => void
+    mode?: 'add' | 'load' | 'refresh'
+    buttonLabel?: string
+    appTitle?: string
+    appSubtitle?: string
     pendingTitle?: string | null
     error?: string
     compact?: boolean
@@ -32,12 +40,27 @@
       <span class="v2-url">{APP_COPY.browserUrl}</span>
     </div>
     <div class="v2-mini-app">
-      <h3>{APP_COPY.appTitle}</h3>
-      <p>{APP_COPY.appSubtitle}</p>
-      <div class="v2-mini-add">
-        <span class="v2-mini-input">{input}</span>
-        <span class="v2-mini-button">{APP_COPY.add}</span>
-      </div>
+      <h3>{appTitle}</h3>
+      <p>{appSubtitle}</p>
+      {#if mode === 'add'}
+        <div class="v2-mini-add">
+          <span class="v2-mini-input">{input}</span>
+          <span class="v2-mini-button">{buttonLabel}</span>
+        </div>
+      {:else}
+        <div class="v2-mini-add">
+          <span class="v2-mini-input">
+            {mode === 'load'
+              ? tasks.length > 0
+                ? 'List loaded'
+                : 'Waiting for the list'
+              : tasks.length > 0
+                ? 'List rebuilt'
+                : 'Reloading the list'}
+          </span>
+          <span class="v2-mini-button">{buttonLabel}</span>
+        </div>
+      {/if}
       <ul class="v2-task-list" aria-label="Tasks">
         {#each tasks as task (task.id)}
           <li class="v2-task" class:is-new={lastAddedId === task.id}>
@@ -64,29 +87,31 @@
       <span class="v2-url">{APP_COPY.browserUrl}</span>
     </div>
     <div class="v2-app">
-      <h2>{APP_COPY.appTitle}</h2>
-      <p class="v2-app-subtitle">{APP_COPY.appSubtitle}</p>
+      <h2>{appTitle}</h2>
+      <p class="v2-app-subtitle">{appSubtitle}</p>
 
       <div class="v2-add-row">
-        <label class="v2-sr-only" for="v2-task-input">{APP_COPY.inputLabel}</label>
-        <input
-          id="v2-task-input"
-          class="v2-input"
-          type="text"
-          value={input}
-          disabled={!interactive}
-          oninput={(event) => onInput(event.currentTarget.value)}
-          onkeydown={(event) => {
-            if (event.key === 'Enter') onAdd()
-          }}
-        />
+        {#if mode === 'add'}
+          <label class="v2-sr-only" for="v2-task-input">{APP_COPY.inputLabel}</label>
+          <input
+            id="v2-task-input"
+            class="v2-input"
+            type="text"
+            value={input}
+            disabled={!interactive}
+            oninput={(event) => onInput(event.currentTarget.value)}
+            onkeydown={(event) => {
+              if (event.key === 'Enter') onAction()
+            }}
+          />
+        {/if}
         <button
           class="v2-primary"
           type="button"
-          onclick={onAdd}
+          onclick={onAction}
           disabled={!interactive}
         >
-          {APP_COPY.add}
+          {buttonLabel}
         </button>
       </div>
 

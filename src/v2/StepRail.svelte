@@ -10,6 +10,10 @@
     tasks,
     pendingTitle,
     lastAddedId,
+    appTitle,
+    appSubtitle,
+    appMode,
+    appButton,
     caption,
     onStep,
   }: {
@@ -19,6 +23,10 @@
     tasks: Array<{ id: number; title: string }>
     pendingTitle: string | null
     lastAddedId: number | null
+    appTitle: string
+    appSubtitle: string
+    appMode: 'add' | 'load' | 'refresh'
+    appButton: string
     caption: string
     onStep: (index: number) => void
   } = $props()
@@ -31,10 +39,14 @@
     {input}
     pendingTitle={pendingTitle}
     lastAddedId={lastAddedId}
+    appTitle={appTitle}
+    appSubtitle={appSubtitle}
+    mode={appMode}
+    buttonLabel={appButton}
     compact
     interactive={false}
     onInput={() => {}}
-    onAdd={() => {}}
+    onAction={() => {}}
   />
   <p class="v2-caption">{caption}</p>
 

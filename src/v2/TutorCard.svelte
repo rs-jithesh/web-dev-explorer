@@ -5,10 +5,12 @@
     stepIndex,
     prompt,
     actorLabel,
+    term = null,
   }: {
     stepIndex: number
     prompt: string
     actorLabel: string
+    term?: string | null
   } = $props()
 
   let previewEl: HTMLTextAreaElement | undefined = $state()
@@ -70,6 +72,9 @@
     >
       {actorLabel}
     </span>
+    {#if term}
+      <span class="v2-term-chip">Term · {term}</span>
+    {/if}
   </div>
 
   <p class="v2-eyebrow v2-prompt-label">{TUTOR_COPY.promptLabel}</p>

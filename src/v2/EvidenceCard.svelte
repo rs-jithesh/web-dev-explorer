@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { EvidenceBlock } from './evidence'
   import { DETAIL_COPY } from './content'
+  import TermTip from './TermTip.svelte'
 
   let {
     stepIndex,
@@ -8,16 +9,20 @@
     actorLabel,
     actorTone,
     blocks,
+    terms,
     onBack,
     onStep,
+    onTerm,
   }: {
     stepIndex: number
     stepLabel: string
     actorLabel: string
     actorTone: 'browser' | 'server' | 'database'
     blocks: EvidenceBlock[]
+    terms: string[]
     onBack: () => void
     onStep: (index: number) => void
+    onTerm: (term: string) => void
   } = $props()
 
   const previous = $derived(stepIndex > 0 ? stepIndex - 1 : null)
@@ -128,6 +133,17 @@
       {/if}
     {/each}
   </div>
+
+  {#if terms.length > 0}
+    <div class="v2-terms" aria-label="Terms in this step">
+      <span class="v2-eyebrow">Terms</span>
+      <div class="v2-term-list">
+        {#each terms as term (term)}
+          <TermTip {term} onAsk={onTerm} />
+        {/each}
+      </div>
+    </div>
+  {/if}
 
   <footer class="v2-detail-controls">
     {#if previous !== null}

@@ -11,7 +11,10 @@
   const STORAGE_KEY = 'wfe:view'
 
   function parseView(value: string | null | undefined): ViewName | null {
-    return value === 'classic' || value === 'explorer' ? value : null
+    if (!value) return null
+    if (value === 'classic' || value.startsWith('classic/')) return 'classic'
+    if (value === 'explorer' || value.startsWith('explorer/')) return 'explorer'
+    return null
   }
 
   function readInitialView(): ViewName {

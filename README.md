@@ -15,11 +15,13 @@ Prediction and lock-in UI is currently hidden behind `SHOW_PREDICTIONS = false`;
 The app has two experience modes, selected from the quiet **Classic / Explorer** control in the top bar:
 
 - **Classic** is the original five-lesson flow. Its components, lesson data and styles are unchanged.
-- **Explorer** is the new v2 walkthrough for adding a task. It starts inside the app, shrinks the app into an anchor beside the explanation, and then opens the wire details for one step at a time. Use the depth control or keys `1`, `2` and `3`; `Esc` moves back one depth.
+- **Explorer** is the new v2 walkthrough for all five lessons. It starts inside the app, shrinks the app into an anchor beside the explanation, and then opens the wire details for one step at a time. Use the depth control or keys `1`, `2` and `3`; the left and right arrow keys move between steps; `Esc` moves back one depth.
+- Explorer keeps the **Add a task** success path and exposes failure cases in the story controls: empty title, invalid JSON, unknown path, wrong method, server off and direct database access. The other lessons have their own cases, including load failures, the trusted database boundary and the refresh test.
+- Inline terminology is clickable inside Under the hood. A term opens a short CS-bridge definition and **Ask tutor in context**, which selects that term in the prompt builder.
 
-The mode is stored in the URL hash (`#classic` or `#explorer`) and in `localStorage`, falling back to Classic when storage is unavailable. Explorer is the default for new visitors; Classic remains available from the toggle and at `#classic`.
+The mode is stored in the URL hash (`#classic` or `#explorer/...`) and in `localStorage`, falling back to Classic when storage is unavailable. Explorer is the default for new visitors; Classic remains available from the toggle and at `#classic`. Explorer deep links use `#explorer/<lesson>/<depth>/<step>`, for example `#explorer/add/3/3` or `#explorer/refresh/2/1`.
 
-The v2 prompt preview still uses the shared tutor engine: `buildSnapshot()` and `buildPrompt()` build the prompt; v2 only supplies the current story step, request, response and evidence. `tests/v2.test.mjs` covers the five-step story, step-3 and step-4 evidence, title validation and the step-specific tutor prompt.
+The v2 prompt preview still uses the shared tutor engine: `buildSnapshot()` and `buildPrompt()` build the prompt; v2 only supplies the current lesson, story step, request, response, evidence and optional selected term. `tests/v2.test.mjs` covers the five-step stories, failure paths, load/refresh evidence, term prompts and the five Explorer lessons.
 
 ## Run it
 
@@ -132,14 +134,17 @@ src/
   v2/
     App.svelte               Explorer shell, depth and step state
     v2.css                   Explorer layout and components
-    content.ts               Explorer copy, five-step story, checklists
+    content.ts               shared Explorer copy and default Add story
+    lessons.ts               five lesson configs, cases and story shaping
     evidence.ts              pure per-step evidence builder
+    glossary.ts              CS-bridge term definitions
     tutor.ts                 Explorer adapter over the shared tutor engine
     VersionToggle.svelte     Classic / Explorer control and menu
     TaskApp.svelte           full browser app and compact anchor
     StoryCard.svelte         five-step Behind the scenes card
     StepRail.svelte          per-step rail for Under the hood
     EvidenceCard.svelte      request / response / code / table receipts
+    TermTip.svelte           clickable term popover and tutor action
     TutorCard.svelte         prompt preview, edit and copy
   engine/
     types.ts                 lesson, scenario, step and composer shapes

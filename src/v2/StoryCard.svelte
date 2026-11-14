@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { StoryStep } from './content'
+  import type { ExplorerCase } from './lessons'
   import { STORY_COPY } from './content'
 
   let {
@@ -9,7 +10,9 @@
     onStep,
     onReplay,
     onDetails,
-    onTryEmpty,
+    cases,
+    caseId,
+    onCase,
   }: {
     steps: StoryStep[]
     stepIndex: number
@@ -17,7 +20,9 @@
     onStep: () => void
     onReplay: () => void
     onDetails: () => void
-    onTryEmpty: () => void
+    cases: ExplorerCase[]
+    caseId: string
+    onCase: (id: string) => void
   } = $props()
 
   const atEnd = $derived(stepIndex >= steps.length - 1)
@@ -90,8 +95,17 @@
         {STORY_COPY.replay}
       </button>
     </div>
-    <button class="v2-text-button" type="button" onclick={onTryEmpty}>
-      {STORY_COPY.tryEmpty}
-    </button>
+    <label class="v2-case-select-wrap">
+      <span class="v2-sr-only">Try a case</span>
+      <select
+        class="v2-case-select"
+        value={caseId}
+        onchange={(event) => onCase(event.currentTarget.value)}
+      >
+        {#each cases as item (item.id)}
+          <option value={item.id}>{item.label}</option>
+        {/each}
+      </select>
+    </label>
   </div>
 </article>
