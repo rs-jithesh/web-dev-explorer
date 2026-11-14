@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onDestroy } from 'svelte'
   import {
     buildPrompt,
     termsForSnapshot,
@@ -28,6 +29,9 @@
   let selected = $state<ChoiceId>('why')
   let ownText = $state('')
   let selectedTerm = $state('')
+  let previewEl: HTMLTextAreaElement | undefined = $state()
+  let copyStatus = $state('')
+  let copyTimer: ReturnType<typeof setTimeout> | undefined
 
   const terms = $derived([
     ...new Set([...termsForSnapshot(snapshot), ...extraTerms]),
@@ -47,6 +51,35 @@
   )
 
   const prompt = $derived(buildPrompt(snapshot, choice, ownText))
+
+  $effect(() => {
+    prompt
+    copyStatus = ''
+  })
+
+  onDestroy(() => {
+    if (copyTimer) clearTimeout(copyTimer)
+  })
+
+  async function copyPrompt() {
+    if (copyTimer) clearTimeout(copyTimer)
+    copyStatus = ''
+
+    try {
+      const clipboard = navigator.clipboard
+      if (!clipboard?.writeText) throw new Error('Clipboard unavailable')
+      await clipboard.writeText(prompt)
+      copyStatus = TUTOR_UI.copied
+    } catch {
+      previewEl?.focus()
+      previewEl?.select()
+      copyStatus = TUTOR_UI.copyFallback
+    }
+
+    copyTimer = setTimeout(() => {
+      copyStatus = ''
+    }, 6000)
+  }
 </script>
 
 <details class="card tutor">
@@ -126,8 +159,22 @@
         readonly
         spellcheck="false"
         value={prompt}
+        bind:this={previewEl}
         aria-describedby="tutor-prompt-hint"
       ></textarea>
+      <div class="tutor-copy">
+        <button class="btn btn-primary" type="button" onclick={copyPrompt}>
+          {TUTOR_UI.copy}
+        </button>
+        <p
+          class="copy-status"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {copyStatus}
+        </p>
+      </div>
       <p class="hint" id="tutor-prompt-hint">{TUTOR_UI.previewHint}</p>
     </div>
   </div>

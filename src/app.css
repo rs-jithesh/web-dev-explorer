@@ -1531,6 +1531,21 @@ h1 {
   white-space: pre-wrap;
 }
 
+.tutor-copy {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.copy-status {
+  min-height: 18px;
+  margin: 0;
+  color: var(--body);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 /* Refresh test */
 
 .refresh-test {

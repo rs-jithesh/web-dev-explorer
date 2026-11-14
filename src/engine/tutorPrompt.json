@@ -46,7 +46,10 @@
     "terms": "Terms on this screen",
     "noTerms": "No terms available yet.",
     "preview": "Prompt preview",
-    "previewHint": "Review the prompt before copying it into your own AI chat."
+    "previewHint": "Review the prompt before copying it into your own AI chat.",
+    "copy": "Copy prompt",
+    "copied": "Prompt copied.",
+    "copyFallback": "Prompt selected. Press Ctrl/Cmd+C."
   },
   "questionTitle": "My question",
   "userTextLabel": "In my own words",

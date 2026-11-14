@@ -6,6 +6,8 @@ The main lesson gives the learner a real request composer. They choose a method,
 
 The layout separates the **client/browser** (blue), **server/backend** (ink) and **database** (amber) into three stacked zones, with labelled HTTP and database boundaries. Technical terms have an info icon that opens a plain-language explanation; the icons are keyboard reachable.
 
+Every lesson also has a collapsible **Ask a tutor** panel. It builds a ready-to-copy prompt from the lesson state — no AI call or backend — and lets the learner review it before copying.
+
 Prediction and lock-in UI is currently hidden behind `SHOW_PREDICTIONS = false`; Add, Reload, Send and Refresh run immediately. See [Prediction UI](#prediction-ui).
 
 ## Run it
@@ -15,7 +17,13 @@ npm install
 npm run dev
 ```
 
-Build a static copy:
+Run the engine tests:
+
+```bash
+npm test
+```
+
+The tests use Node's built-in test runner; there are no test dependencies. Build a static copy:
 
 ```bash
 npm run build
@@ -40,7 +48,7 @@ The first deployment can take a minute. The site will be available at `https://<
 - Five lessons: Add a task, Load the list, When things fail, Who talks to the database, and What survives a refresh?
 - The UI is split into three stacked zones: **Client / browser** (the composer and app UI), **Server / backend** (the API router and server handler) and **Database** (the tasks table). The HTTP request/response boundary and the server-only database connection are labelled between them.
 - Lesson 1 uses the request composer: method (GET/POST/DELETE), path, JSON body, and Send. An Endpoint line shows the effective method and URL as the learner edits.
-- The composer walkthrough auto-plays from the real response at 4 seconds per step. Step and Back pause it for slow-motion inspection.
+- The composer walkthrough auto-plays from the real response at 2 seconds per step. Step and Back pause it for slow-motion inspection.
 - Technical terms have info icons: the client, server and database zones, each card, HTTP requests and responses, methods, paths, endpoints, JSON, refresh modes, and the result. Clicking or tapping an icon opens a short explanation in an accessible popover.
 - A payload token follows the data through the pipeline, changing from form text to request JSON, a server object, a table row, response JSON and a list item.
 - The composer presets cover a valid POST, GET, empty title, invalid JSON, unknown path and wrong method.
@@ -50,7 +58,21 @@ The first deployment can take a minute. The site will be available at `https://<
 - The refresh test has two modes: **Browser only** and **Through the API and database**. The learner adds tasks, then presses Refresh; browser-only tasks vanish, while API-backed tasks reload with GET /tasks.
 - The refresh test uses the same zone model. The browser app is in the client zone; the server request log and the persisted tasks table are separate Server and Database cards. Browser-only mode shows the server and database zones as unused instead of hiding the distinction.
 - API mode shows the persisted database rows and every POST/GET, so the reload is visibly backed by data rather than a cached list.
-- Keyboard-reachable controls, keyboard-reachable info icons, and an `aria-live` announcement of the active box and final result.
+- The **Ask a tutor** panel offers three prompt choices, an optional one-line question, and term buttons for terms visible on the current screen. It shows a read-only prompt preview and a **Copy prompt** button.
+- Copy uses `navigator.clipboard` when available. If the clipboard is unavailable, it selects the preview text and announces “Prompt selected. Press Ctrl/Cmd+C.” The copy confirmation is announced through an `aria-live` status.
+- Keyboard-reachable controls, keyboard-reachable info icons, and an `aria-live` announcement of the active box, final result and copy status.
+
+## Ask a tutor
+
+The tutor panel is a prompt builder, not an AI feature. It fills a fixed template from the current lesson state and never sends anything over the network.
+
+- `buildSnapshot(input)` in `src/engine/tutor.ts` is a pure function. Because the app state uses Svelte runes, the caller passes the current player/view/refresh values explicitly.
+- `buildPrompt(snapshot, choice, userText)` is a pure function. It emits the tutor role, relevant context, the chosen question, and the instructions in that order.
+- `src/engine/tutorPrompt.json` holds the prompt wording and panel labels. Tuning roles, question text, instructions, status labels or outcome wording does not require changing builder code.
+- The context is filtered: database rows are omitted when the request never reached the database, errors include their response body, successful response bodies are skipped when the database rows already show the same data, and term questions only include the matching detail.
+- `termsForSnapshot(snapshot)` derives the term buttons from what is visible. The composer adds method, path, endpoint, request body and JSON.
+- The preview is read-only. Copy uses `navigator.clipboard`; if it is unavailable, the panel selects the preview text so the learner can use Ctrl/Cmd+C. Both outcomes are announced in an `aria-live` status.
+- `tests/tutor.test.mjs` covers composer success, validation failure, 404, term filtering, refresh state, missing predictions, user text and section order.
 
 ## Prediction UI
 
@@ -105,6 +127,8 @@ src/
     refresh.svelte.ts        refresh-test state, fake POST/GET calls and request log
     features.ts              temporary feature flags (predictions are currently off)
     zones.ts                 shared zone and boundary teaching copy
+    tutor.ts                 pure snapshot and prompt builders, current-screen terms
+    tutorPrompt.json         prompt wording and tutor-panel labels
   lessons/
     lesson1.ts ... lesson5.ts
     index.ts
@@ -129,10 +153,13 @@ src/
     RefreshPrediction.svelte
     RefreshResult.svelte
     InfoTip.svelte
+    TutorPanel.svelte
     Zone.svelte
     ZoneBoundary.svelte
     Card.svelte
     FlowArrow.svelte
+tests/
+  tutor.test.mjs
 ```
 
 A scripted lesson is data: a request, a starting table, the code shown in the server card, a prediction, a main scenario and break-it scenarios. Lesson 1 also has a `composer` config with its default method, path, body and presets. Lesson 5 has a `refresh` config with its two modes, per-mode predictions and two-sentence explanations. The generated composer steps and refresh-test state are engine logic, not hand-written UI.
@@ -155,8 +182,12 @@ The UI should stay lesson-agnostic. If a lesson needs custom UI code, the data s
 - Technical terms use a small info icon that opens a native popover. The popover is in the top layer, so it is never clipped by a card; it works with mouse, touch and keyboard, and closes with Escape or the Close button.
 - The database card is called **Tasks table** so it is distinct from the **Database** zone, both visually and as an accessible landmark.
 - Lesson 1 puts the composer inside the client zone, beside the browser app, so the learner starts by sending a request while seeing both client-side pieces together.
+- Ask a tutor is local prompt assembly: no AI service, no API call, no prefilled chat links. The preview is part of the lesson, so the learner sees the context before copying.
+- The prompt builder is pure and testable. The component only supplies the current snapshot, choice, term and optional user text.
+- The term picker is deliberately scoped to the current screen rather than a global glossary. Terms are buttons, not automatic links, so choosing one is a clear action.
+- Copying is a browser-only convenience. The fallback keeps the feature usable in insecure or restricted contexts by selecting the prompt text instead of failing silently.
 - When `SHOW_PREDICTIONS` is enabled, the status prediction is required before Send. Pressing Send without one shows “Choose the status you expect first.” and focuses the first option.
-- The composer auto-plays at 4 seconds per step. Pressing Step or Back pauses auto-play and switches to manual inspection.
+- The composer auto-plays at 2 seconds per step. Pressing Step or Back pauses auto-play and switches to manual inspection.
 - The payload token is rendered in the card for the layer that currently owns the data, so it visibly crosses from browser to API to server to database and back.
 - The payload transition is a short slide/fade. Reduced-motion users get an instant switch.
 - Composer presets are lesson data, not hand-written buttons in the UI.
