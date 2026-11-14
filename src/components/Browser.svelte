@@ -8,6 +8,7 @@
     title,
     editable,
     canTrigger,
+    showControls = true,
     onTitle,
     onTrigger,
   }: {
@@ -16,6 +17,7 @@
     title: string
     editable: boolean
     canTrigger: boolean
+    showControls?: boolean
     onTitle: (value: string) => void
     onTrigger: () => void
   } = $props()
@@ -25,55 +27,59 @@
   <div class="card-body">
     <div class="url-pill">localhost:5173/todo</div>
 
-    {#if view.mode === 'add'}
-      <div class="field">
-        <label class="lbl" for="task-title">New task</label>
-        <div class="row">
-          <input
-            id="task-title"
-            class="text-input"
-            type="text"
-            value={title}
-            placeholder="Task title"
-            disabled={!editable}
-            oninput={(event) => onTitle(event.currentTarget.value)}
-          />
+    {#if showControls}
+      {#if view.mode === 'add'}
+        <div class="field">
+          <label class="lbl" for="task-title">New task</label>
+          <div class="row">
+            <input
+              id="task-title"
+              class="text-input"
+              type="text"
+              value={title}
+              placeholder="Task title"
+              disabled={!editable}
+              oninput={(event) => onTitle(event.currentTarget.value)}
+            />
+            <button
+              class="btn btn-primary"
+              type="button"
+              onclick={onTrigger}
+              disabled={!canTrigger}
+            >
+              Add
+            </button>
+          </div>
+        </div>
+      {:else if view.mode === 'load'}
+        <div class="row spread">
+          <span class="lbl">Tasks</span>
           <button
             class="btn btn-primary"
             type="button"
             onclick={onTrigger}
             disabled={!canTrigger}
           >
-            Add
+            Reload
           </button>
         </div>
-      </div>
-    {:else if view.mode === 'load'}
-      <div class="row spread">
-        <span class="lbl">Tasks</span>
-        <button
-          class="btn btn-primary"
-          type="button"
-          onclick={onTrigger}
-          disabled={!canTrigger}
-        >
-          Reload
-        </button>
-      </div>
-      <p class="hint">The list is fetched when the page loads.</p>
-    {:else}
-      <div class="row spread">
-        <span class="lbl">Database access</span>
-        <button
-          class="btn btn-primary"
-          type="button"
-          onclick={onTrigger}
-          disabled={!canTrigger}
-        >
-          Open tasks.db
-        </button>
-      </div>
-      <p class="hint">The browser has no database driver.</p>
+        <p class="hint">The list is fetched when the page loads.</p>
+      {:else if view.mode === 'delete'}
+        <p class="hint">A DELETE request is sent from the composer above.</p>
+      {:else}
+        <div class="row spread">
+          <span class="lbl">Database access</span>
+          <button
+            class="btn btn-primary"
+            type="button"
+            onclick={onTrigger}
+            disabled={!canTrigger}
+          >
+            Open tasks.db
+          </button>
+        </div>
+        <p class="hint">The browser has no database driver.</p>
+      {/if}
     {/if}
 
     {#if view.mode === 'direct'}
@@ -105,10 +111,16 @@
             <span>Loading tasks…</span>
             <span class="status">GET /tasks</span>
           </li>
+        {:else if view.state === 'pending' && view.statusLabel}
+          <li class="task-item pending">
+            <span>{view.statusLabel}</span>
+          </li>
         {/if}
 
         {#if view.items.length === 0 && !view.pendingTitle && view.mode === 'load' && view.state === 'idle'}
-          <li class="empty-row">No tasks loaded yet. Press Reload.</li>
+          <li class="empty-row">
+            {showControls ? 'No tasks loaded yet. Press Reload.' : 'No tasks loaded yet.'}
+          </li>
         {/if}
       </ul>
 

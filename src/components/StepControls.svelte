@@ -10,7 +10,8 @@
     canStep,
     canBack,
     atEnd,
-    locked,
+    ready,
+    hint,
     readyText,
     onStep,
     onBack,
@@ -24,7 +25,8 @@
     canStep: boolean
     canBack: boolean
     atEnd: boolean
-    locked: number | null
+    ready: boolean
+    hint: string
     readyText: string
     onStep: () => void
     onBack: () => void
@@ -60,8 +62,8 @@
       <button class="btn" type="button" onclick={onReset}>Reset</button>
     </div>
 
-    {#if locked === null}
-      <p class="hint">Step unlocks after you lock in a guess.</p>
+    {#if !ready}
+      <p class="hint">{hint}</p>
     {/if}
   </div>
 </Card>

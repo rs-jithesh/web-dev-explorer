@@ -4,7 +4,7 @@ export type Method = 'GET' | 'POST' | 'DELETE'
 
 export type Transport = 'http' | 'db'
 
-export type BrowserMode = 'add' | 'load' | 'direct'
+export type BrowserMode = 'add' | 'load' | 'direct' | 'delete'
 
 export type Stage =
   | 'click'
@@ -52,6 +52,20 @@ export interface Scenario {
   steps: Step[]
 }
 
+export interface ComposerPreset {
+  label: string
+  method: Method
+  path: string
+  body: string
+}
+
+export interface ComposerConfig {
+  method: Method
+  path: string
+  body: string
+  presets: ComposerPreset[]
+}
+
 export interface Lesson {
   id: string
   navLabel: string
@@ -65,4 +79,5 @@ export interface Lesson {
   main: Scenario
   breakIts: Scenario[]
   dbNote?: string
+  composer?: ComposerConfig
 }

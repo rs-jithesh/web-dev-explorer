@@ -59,7 +59,7 @@ button:disabled {
   cursor: not-allowed;
 }
 
-:where(button, input, summary):focus-visible {
+:where(button, input, select, textarea, summary):focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
@@ -323,6 +323,170 @@ h1 {
 
 .text-input::placeholder {
   color: #9a968b;
+}
+
+.select-input {
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--field);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.select-input:disabled {
+  background: #f6f5f1;
+  color: var(--muted);
+}
+
+.body-input {
+  width: 100%;
+  min-height: 96px;
+  padding: 10px 12px;
+  border: 1px solid var(--field);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.body-input:disabled {
+  background: #f6f5f1;
+  color: var(--muted);
+}
+
+.composer-intro {
+  margin: 0;
+  color: var(--body);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.composer-row {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.composer-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.composer-row .method-field {
+  flex: 0 0 110px;
+}
+
+.composer-row .path-field {
+  flex: 1 1 220px;
+}
+
+.composer-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.composer-presets {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.status-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.status-field.has-error .status-options {
+  border-radius: 10px;
+  outline: 1px solid #f1c0bb;
+  outline-offset: 4px;
+}
+
+.status-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.status-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--field);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--body);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.status-option:hover {
+  background: #f6f5f1;
+}
+
+.status-option input {
+  flex: none;
+  accent-color: var(--accent);
+}
+
+.status-option.selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.status-option.correct {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.status-option.wrong {
+  border-color: #f1c0bb;
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.status-option:has(input:disabled) {
+  cursor: default;
+}
+
+.status-option:has(input:disabled):hover {
+  background: #fff;
+}
+
+.status-option.correct:has(input:disabled):hover {
+  background: var(--accent-soft);
+}
+
+.status-option.wrong:has(input:disabled):hover {
+  background: var(--danger-soft);
+}
+
+.result-sentence {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
 }
 
 .btn {

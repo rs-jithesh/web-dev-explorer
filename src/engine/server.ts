@@ -245,3 +245,11 @@ export function simulate(
 ): Run {
   return handleRequest(toWireRequest(request), tasks, options)
 }
+
+/**
+ * The idle state before a composer request is sent. It lets the flow cards
+ * render the current database and browser list without showing a response.
+ */
+export function previewRun(tasks: Task[]): Run {
+  return makeRun(null, tasks)
+}

@@ -97,6 +97,7 @@ function browserView(
   step: Step | null,
   run: Run,
   title: string,
+  tasks: Task[],
 ): BrowserView {
   const mode = scenario.mode ?? lesson.mode
 
@@ -116,7 +117,7 @@ function browserView(
     return {
       mode,
       state: 'idle',
-      items: mode === 'load' ? [] : lesson.startingTasks,
+      items: mode === 'load' ? [] : tasks,
       pendingTitle: null,
       highlightId: null,
       error: null,
@@ -132,7 +133,7 @@ function browserView(
       return {
         mode,
         state: 'error',
-        items: mode === 'load' ? [] : lesson.startingTasks,
+        items: mode === 'load' ? [] : tasks,
         pendingTitle: null,
         highlightId: null,
         error: errorText(run),
@@ -147,7 +148,20 @@ function browserView(
       pendingTitle: null,
       highlightId: run.inserted?.id ?? null,
       error: null,
-      statusLabel: mode === 'load' ? 'Loaded' : 'Saved',
+      statusLabel:
+        mode === 'load' ? 'Loaded' : mode === 'delete' ? 'Deleted' : 'Saved',
+    }
+  }
+
+  if (mode === 'delete') {
+    return {
+      mode,
+      state: 'pending',
+      items: tasks,
+      pendingTitle: null,
+      highlightId: null,
+      error: null,
+      statusLabel: 'Deleting…',
     }
   }
 
@@ -173,7 +187,7 @@ function browserView(
   return {
     mode,
     state: 'pending',
-    items: lesson.startingTasks,
+    items: tasks,
     pendingTitle: title.trim() ? title : '(empty title)',
     highlightId: null,
     error: null,
@@ -233,7 +247,11 @@ function apiView(step: Step | null, run: Run): ApiView {
   }
 }
 
-function serverView(lesson: Lesson, step: Step | null, run: Run): ServerView {
+function serverView(
+  step: Step | null,
+  run: Run,
+  code: string[],
+): ServerView {
   const on = run.failure !== 'timeout' && run.failure !== 'blocked'
   const status =
     run.failure === 'timeout'
@@ -276,18 +294,23 @@ function serverView(lesson: Lesson, step: Step | null, run: Run): ServerView {
   return {
     on,
     status,
-    lines: lesson.code,
+    lines: code,
     activeLine: on && step?.line ? step.line : null,
     note,
   }
 }
 
-function databaseView(lesson: Lesson, step: Step | null, run: Run): DatabaseView {
+function databaseView(
+  lesson: Lesson,
+  step: Step | null,
+  run: Run,
+  tasks: Task[],
+): DatabaseView {
   const locked = run.failure === 'blocked'
   const showedDatabase = step ? reached(step.stage, 'db') : false
 
   return {
-    rows: showedDatabase ? run.tasksAfter : lesson.startingTasks,
+    rows: showedDatabase ? run.tasksAfter : tasks,
     highlightId: showedDatabase && run.inserted ? run.inserted.id : null,
     sql: showedDatabase ? run.sql : null,
     locked,
@@ -301,12 +324,14 @@ export function buildView(
   step: Step | null,
   run: Run,
   title: string,
+  tasks: Task[] = lesson.startingTasks,
+  code: string[] = lesson.code,
 ): FlowView {
   return {
     active: step?.active ?? null,
-    browser: browserView(lesson, scenario, step, run, title),
+    browser: browserView(lesson, scenario, step, run, title, tasks),
     api: apiView(step, run),
-    server: serverView(lesson, step, run),
-    database: databaseView(lesson, step, run),
+    server: serverView(step, run, code),
+    database: databaseView(lesson, step, run, tasks),
   }
 }

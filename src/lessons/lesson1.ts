@@ -1,10 +1,5 @@
 import type { Lesson, Scenario } from '../engine/types'
-import {
-  addSteps,
-  emptySteps,
-  notFoundSteps,
-  offlineSteps,
-} from '../engine/scenarios'
+import { addSteps } from '../engine/scenarios'
 
 const main: Scenario = {
   id: 'add',
@@ -13,34 +8,16 @@ const main: Scenario = {
   steps: addSteps,
 }
 
-const empty: Scenario = {
-  id: 'empty-task',
-  label: 'Send an empty task',
-  request: { method: 'POST', path: '/tasks', title: '' },
-  steps: emptySteps,
-}
-
-const wrongUrl: Scenario = {
-  id: 'wrong-url',
-  label: 'Use a wrong URL',
-  request: { method: 'POST', path: '/task', title: 'Buy milk' },
-  steps: notFoundSteps,
-}
-
-const serverOff: Scenario = {
-  id: 'server-off',
-  label: 'Turn the server off',
-  request: { method: 'POST', path: '/tasks', title: 'Buy milk' },
-  serverOn: false,
-  steps: offlineSteps,
-}
+const validBody = '{\n  "title": "Buy milk"\n}'
+const emptyBody = '{\n  "title": ""\n}'
+const invalidJson = '{\n  "title": "Buy milk"\n'
 
 export const lesson1: Lesson = {
   id: 'add-a-task',
   navLabel: '1 Add a task',
   title: 'Add a task',
   intro:
-    'Press Add and follow one request from the browser, through the server, into the database and back.',
+    'Compose a request, predict the status, and send it. Follow it from the browser to the database and back.',
   mode: 'add',
   inputDefault: 'Buy milk',
   startingTasks: [
@@ -67,5 +44,18 @@ export const lesson1: Lesson = {
       'The browser sent POST /tasks with the new title. The server wrote the row and returned 201 Created; the browser never touched the database.',
   },
   main,
-  breakIts: [empty, wrongUrl, serverOff],
+  breakIts: [],
+  composer: {
+    method: 'POST',
+    path: '/tasks',
+    body: validBody,
+    presets: [
+      { label: 'Add a task', method: 'POST', path: '/tasks', body: validBody },
+      { label: 'Load the list', method: 'GET', path: '/tasks', body: '' },
+      { label: 'Empty title', method: 'POST', path: '/tasks', body: emptyBody },
+      { label: 'Invalid JSON', method: 'POST', path: '/tasks', body: invalidJson },
+      { label: 'Unknown path', method: 'POST', path: '/task', body: validBody },
+      { label: 'Wrong method', method: 'DELETE', path: '/tasks', body: '' },
+    ],
+  },
 }
