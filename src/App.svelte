@@ -10,6 +10,7 @@
   import RequestComposer from './components/RequestComposer.svelte'
   import ResultPanel from './components/ResultPanel.svelte'
   import RefreshTest from './components/RefreshTest.svelte'
+  import TutorPanel from './components/TutorPanel.svelte'
   import Zone from './components/Zone.svelte'
   import ZoneBoundary from './components/ZoneBoundary.svelte'
   import { tick } from 'svelte'
@@ -26,6 +27,7 @@
     statusSentence,
   } from './engine/composer'
   import { SHOW_PREDICTIONS } from './engine/features'
+  import { buildSnapshot } from './engine/tutor'
   import type { Box } from './engine/types'
 
   const player = new Player(lessons)
@@ -211,6 +213,58 @@
         : 'Waiting for Send'
       : `Step ${player.stepIndex + 1} of ${player.totalSteps}`,
   )
+
+  const tutorPrediction = $derived.by(() => {
+    if (isComposer) {
+      if (player.composerStatus === null) return null
+      const verdict = player.statusVerdict
+      return {
+        selected: statusLabel(player.composerStatus),
+        correct: verdict ? statusLabel(player.composerActualStatus) : null,
+        verdict,
+      }
+    }
+
+    if (player.locked === null) return null
+    const verdict = player.verdict
+    return {
+      question: lesson.prediction.question,
+      selected: lesson.prediction.options[player.locked],
+      correct: verdict
+        ? lesson.prediction.options[lesson.prediction.correctIndex]
+        : null,
+      verdict,
+    }
+  })
+
+  const tutorFailure = $derived(
+    player.step &&
+      player.step.stage !== 'click' &&
+      player.step.stage !== 'send'
+      ? run.failure
+      : null,
+  )
+
+  const tutorSnapshot = $derived(
+    buildSnapshot({
+      lesson: { id: lesson.id, title: lesson.title },
+      step: player.step
+        ? {
+            index: player.stepIndex,
+            total: player.totalSteps,
+            active: player.step.active,
+            stage: player.step.stage,
+            explanation: player.step.explanation,
+          }
+        : null,
+      request: view.api.sent ? view.api.request : null,
+      response: view.api.response,
+      failure: tutorFailure,
+      server: { lines: view.server.lines, activeLine: view.server.activeLine },
+      databaseRows: view.database.rows,
+      prediction: tutorPrediction,
+    }),
+  )
 </script>
 
 <svelte:head>
@@ -262,7 +316,10 @@
     </section>
 
     {#if lesson.refresh}
-      <RefreshTest config={lesson.refresh} />
+      <RefreshTest
+        config={lesson.refresh}
+        lesson={{ id: lesson.id, title: lesson.title }}
+      />
     {:else}
       <div class="zones" bind:this={flowEl} tabindex="-1">
         <Zone kind="client">
@@ -407,6 +464,15 @@
           onMain={() => player.selectScenario(null)}
         />
       {/if}
+
+      {#key lesson.id}
+        <TutorPanel
+          snapshot={tutorSnapshot}
+          extraTerms={isComposer
+            ? ['method', 'path', 'endpoint', 'request body', 'JSON']
+            : []}
+        />
+      {/key}
 
       <p class="sr-only" aria-live="polite">{liveText}</p>
     {/if}

@@ -3,7 +3,9 @@
   import type { RefreshConfig } from '../engine/types'
   import { RefreshTestStore } from '../engine/refresh.svelte'
   import { SHOW_PREDICTIONS } from '../engine/features'
+  import { buildSnapshot } from '../engine/tutor'
   import InfoTip from './InfoTip.svelte'
+  import TutorPanel from './TutorPanel.svelte'
   import Zone from './Zone.svelte'
   import ZoneBoundary from './ZoneBoundary.svelte'
   import RefreshBrowser from './RefreshBrowser.svelte'
@@ -12,7 +14,13 @@
   import RefreshPrediction from './RefreshPrediction.svelte'
   import RefreshResult from './RefreshResult.svelte'
 
-  let { config }: { config: RefreshConfig } = $props()
+  let {
+    config,
+    lesson,
+  }: {
+    config: RefreshConfig
+    lesson: { id: string; title: string }
+  } = $props()
 
   // The lesson remounts this component when the lesson changes, so the
   // initial config is intentionally captured here.
@@ -46,6 +54,34 @@
               : ''
           }`
         : `Editing. ${test.browserTasks.length} ${test.browserTasks.length === 1 ? 'task' : 'tasks'} in the browser.`,
+  )
+
+  const tutorPrediction = $derived.by(() => {
+    if (test.prediction === null) return null
+    const verdict = test.verdict
+    return {
+      question: test.mode.prediction.question,
+      selected: test.mode.prediction.options[test.prediction],
+      correct: verdict
+        ? test.mode.prediction.options[test.mode.prediction.correctIndex]
+        : null,
+      verdict,
+    }
+  })
+
+  const tutorSnapshot = $derived(
+    buildSnapshot({
+      lesson,
+      refresh: {
+        modeId: test.modeId,
+        modeLabel: test.mode.label,
+        phase: test.phase,
+        browserTasks: test.browserTasks,
+        databaseRows: test.dbTasks,
+        requests: test.requests,
+      },
+      prediction: tutorPrediction,
+    }),
   )
 </script>
 
@@ -125,6 +161,8 @@
       taskCount={test.browserTasks.length}
     />
   </div>
+
+  <TutorPanel snapshot={tutorSnapshot} />
 
   <p class="sr-only" aria-live="polite">{liveText}</p>
 </div>

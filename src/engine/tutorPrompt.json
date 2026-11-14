@@ -1,0 +1,105 @@
+{
+  "role": "Act as a patient tutor. I have a CS degree, but I'm new to web development. My goal is to understand these flows well enough to supervise an AI that builds apps.",
+  "contextTitle": "Context",
+  "labels": {
+    "lesson": "Lesson",
+    "sent": "What I sent",
+    "requestBody": "Request body",
+    "predicted": "What I predicted",
+    "predictionQuestion": "Prediction question",
+    "actual": "What actually happened",
+    "responseBody": "Response body",
+    "stopped": "Where it stopped",
+    "serverCode": "Server code (→ marks the active line)",
+    "databaseRows": "Database rows",
+    "databaseEmpty": "(no rows)",
+    "browserTasks": "Browser task list",
+    "browserTasksEmpty": "(no tasks)",
+    "refreshMode": "Refresh mode",
+    "requestLog": "Request log",
+    "requestLogEmpty": "No requests yet.",
+    "moreRows": "…and {count} more row(s).",
+    "moreTasks": "…and {count} more task(s).",
+    "moreRequests": "…{count} earlier request(s) omitted.",
+    "truncated": "…(shortened for length)",
+    "noResponseStatus": "no response"
+  },
+  "questions": {
+    "why": "Why did this happen?",
+    "another": "Explain it another way, using this exact example.",
+    "term": "What does “{term}” mean in this lesson?",
+    "termFallback": "What does this term mean in this lesson?"
+  },
+  "buttons": {
+    "why": "Why did this happen?",
+    "another": "Explain it another way",
+    "term": "What does this term mean?"
+  },
+  "ui": {
+    "title": "Ask a tutor",
+    "subtitle": "Build a prompt from this lesson.",
+    "intro": "Choose a question, add your own words if you like, then review the prompt. Nothing is sent from this page.",
+    "info": "This panel fills a prompt template from the lesson state. No AI is called and nothing leaves this page.",
+    "infoLabel": "About Ask a tutor",
+    "ownQuestion": "Add your own question (optional)",
+    "ownQuestionPlaceholder": "One line, if you have one",
+    "terms": "Terms on this screen",
+    "noTerms": "No terms available yet.",
+    "preview": "Prompt preview",
+    "previewHint": "Review the prompt before copying it into your own AI chat."
+  },
+  "questionTitle": "My question",
+  "userTextLabel": "In my own words",
+  "instructionsTitle": "Instructions",
+  "instructions": [
+    "Use this exact example.",
+    "Define every term you use.",
+    "Give a short explanation, then ask me one question to check that I understood.",
+    "Do not just write code for me."
+  ],
+  "prediction": {
+    "correct": "I was right.",
+    "wrong": "I was wrong.",
+    "correctAnswer": "The correct answer was: {correct}."
+  },
+  "status": {
+    "200": "200 OK",
+    "201": "201 Created",
+    "400": "400 Bad Request",
+    "404": "404 Not Found",
+    "405": "405 Method Not Allowed",
+    "500": "500 Server Error"
+  },
+  "stop": {
+    "browser": "In the browser. No HTTP request was made.",
+    "network": "Before the server answered. The request timed out.",
+    "api": "At the API route. The handler did not run.",
+    "server": "In the server code.",
+    "database": "At the database."
+  },
+  "actual": {
+    "step": "At step {number} of {total}, {box} is active. {explanation}",
+    "status": "The server returned {status}.",
+    "noRequest": "No request has been sent yet.",
+    "noResponse": "No response has come back yet.",
+    "blocked": "The browser was blocked before sending an HTTP request.",
+    "refreshDone": "The refresh finished. Browser tasks: {browserCount}. Database rows: {databaseCount}.",
+    "refreshRefreshing": "The refresh is still running. Browser tasks: {browserCount}. Database rows: {databaseCount}.",
+    "refreshEditing": "The refresh has not run yet. Browser tasks: {browserCount}. Database rows: {databaseCount}."
+  },
+  "boxes": {
+    "browser": "Browser",
+    "api": "API router",
+    "server": "Server handler",
+    "database": "Database"
+  },
+  "request": "{method} {path}",
+  "requestLog": "{method} {path} → {status}",
+  "activeLineMarker": "→",
+  "emptyValue": "(empty)",
+  "limits": {
+    "rows": 6,
+    "requests": 5,
+    "bodyCharacters": 500
+  }
+}

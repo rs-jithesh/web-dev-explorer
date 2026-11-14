@@ -608,6 +608,11 @@ h1 {
   height: 60px;
 }
 
+.composer-row .path-input {
+  flex: none;
+  width: 100%;
+}
+
 .path-input {
   padding: 0 14px;
   font-family: var(--mono);
@@ -659,7 +664,7 @@ h1 {
 
 .composer-row {
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 12px;
 }
@@ -1405,6 +1410,127 @@ h1 {
   gap: 6px;
 }
 
+/* Ask a tutor */
+
+.tutor {
+  display: block;
+}
+
+.tutor summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 14px 16px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.tutor summary::-webkit-details-marker {
+  display: none;
+}
+
+.tutor summary::after {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  margin-left: auto;
+  border-right: 1.5px solid var(--muted);
+  border-bottom: 1.5px solid var(--muted);
+  content: '';
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
+}
+
+.tutor[open] summary {
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.tutor[open] summary::after {
+  transform: rotate(-135deg);
+}
+
+.tutor-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.tutor-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.tutor-intro {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.tutor-intro .hint {
+  max-width: 80ch;
+}
+
+.tutor-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tutor-terms {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tutor-term-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tutor-term {
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--field);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--body);
+  font-size: 12px;
+}
+
+.tutor-term:hover {
+  background: #f6f5f1;
+}
+
+.tutor-term.is-active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.tutor-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tutor-prompt {
+  width: 100%;
+  min-height: 240px;
+  padding: 12px;
+  border: 1px solid var(--field);
+  border-radius: 8px;
+  background: #f8f7f4;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.55;
+  resize: vertical;
+  white-space: pre-wrap;
+}
+
 /* Refresh test */
 
 .refresh-test {
@@ -1546,6 +1672,14 @@ h1 {
 
   .boundary-pill {
     padding: 4px 10px;
+  }
+
+  .tutor-body {
+    padding: 14px;
+  }
+
+  .tutor-prompt {
+    min-height: 220px;
   }
 
   h1 {
