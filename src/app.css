@@ -341,6 +341,33 @@ h1 {
   color: var(--muted);
 }
 
+.composer-row .select-input,
+.composer-row .path-input {
+  height: 48px;
+}
+
+.path-input {
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.endpoint-preview {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.endpoint-value {
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: #f1f0eb;
+  color: var(--body);
+  font-family: var(--mono);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
 .body-input {
   width: 100%;
   min-height: 96px;

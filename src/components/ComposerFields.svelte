@@ -20,6 +20,8 @@
   } = $props()
 
   const bodyEnabled = $derived(method === 'POST' && !sent)
+  const endpointPath = $derived(path.trim() || '/')
+  const endpoint = $derived(`${method} localhost:5173${endpointPath}`)
 </script>
 
 <div class="composer-row">
@@ -42,7 +44,7 @@
     <label class="lbl" for="composer-path">Path</label>
     <input
       id="composer-path"
-      class="text-input"
+      class="text-input path-input"
       type="text"
       value={path}
       spellcheck="false"
@@ -50,6 +52,11 @@
       oninput={(event) => onPath(event.currentTarget.value)}
     />
   </div>
+</div>
+
+<div class="endpoint-preview">
+  <span class="lbl">Endpoint</span>
+  <code class="endpoint-value">{endpoint}</code>
 </div>
 
 <div class="composer-field">

@@ -34,7 +34,7 @@ The first deployment can take a minute. The site will be available at `https://<
 ## What is in version one
 
 - Five lessons: Add a task, Load the list, When things fail, Who talks to the database, and What survives a refresh?
-- Lesson 1 uses the request composer: method (GET/POST/DELETE), path, JSON body, a required status prediction, and Send.
+- Lesson 1 uses the request composer: method (GET/POST/DELETE), path, JSON body, a required status prediction, and Send. An Endpoint line shows the effective method and URL as the learner edits.
 - The composer walkthrough auto-plays from the real response. Step and Back pause it for slow-motion inspection.
 - A payload token follows the data through the pipeline, changing from form text to request JSON, a server object, a table row, response JSON and a list item.
 - The composer presets cover a valid POST, GET, empty title, invalid JSON, unknown path and wrong method.
@@ -135,7 +135,7 @@ The UI should stay lesson-agnostic. If a lesson needs custom UI code, the data s
 - The visual direction follows the supplied `First Screen` mockup: warm off-white background, Inter and JetBrains Mono, blue accent, rounded cards and a subtle glow on the active card.
 - Lesson 1 puts the composer above the flow so the learner starts by sending a request, not by pressing a dead button.
 - The status prediction is required before Send. Pressing Send without one shows “Choose the status you expect first.” and focuses the first option.
-- The composer auto-plays at 800ms per step. Pressing Step or Back pauses auto-play and switches to manual inspection.
+- The composer auto-plays at 4 seconds per step. Pressing Step or Back pauses auto-play and switches to manual inspection.
 - The payload token is rendered in the card for the layer that currently owns the data, so it visibly crosses from browser to API to server to database and back.
 - The payload transition is a short slide/fade. Reduced-motion users get an instant switch.
 - Composer presets are lesson data, not hand-written buttons in the UI.

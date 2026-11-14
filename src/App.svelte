@@ -120,7 +120,7 @@
       return
     }
 
-    const timer = setTimeout(() => player.advanceAuto(), 800)
+    const timer = setTimeout(() => player.advanceAuto(), 4000)
     return () => clearTimeout(timer)
   })
 
