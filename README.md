@@ -10,6 +10,17 @@ Every lesson also has a collapsible **Ask a tutor** panel. It builds a ready-to-
 
 Prediction and lock-in UI is currently hidden behind `SHOW_PREDICTIONS = false`; Add, Reload, Send and Refresh run immediately. See [Prediction UI](#prediction-ui).
 
+## Classic and Explorer
+
+The app has two experience modes, selected from the quiet **Classic / Explorer** control in the top bar:
+
+- **Classic** is the original five-lesson flow. Its components, lesson data and styles are unchanged.
+- **Explorer** is the new v2 walkthrough for adding a task. It starts inside the app, shrinks the app into an anchor beside the explanation, and then opens the wire details for one step at a time. Use the depth control or keys `1`, `2` and `3`; `Esc` moves back one depth.
+
+The mode is stored in the URL hash (`#classic` or `#explorer`) and in `localStorage`, falling back to Classic when storage is unavailable. The default is Classic until the Explorer build is ready to become the default.
+
+The v2 prompt preview still uses the shared tutor engine: `buildSnapshot()` and `buildPrompt()` build the prompt; v2 only supplies the current story step, request, response and evidence. `tests/v2.test.mjs` covers the five-step story, step-3 and step-4 evidence, title validation and the step-specific tutor prompt.
+
 ## Run it
 
 ```bash
@@ -115,8 +126,21 @@ A GET starts its payload at the database rows and returns the response array and
 
 ```
 src/
-  App.svelte                 wires the layout and the player together
+  App.svelte                 Classic: wires the layout and the player together
+  AppRoot.svelte             switches Classic and Explorer, hash + storage
   app.css                    one plain CSS file for the whole app
+  v2/
+    App.svelte               Explorer shell, depth and step state
+    v2.css                   Explorer layout and components
+    content.ts               Explorer copy, five-step story, checklists
+    evidence.ts              pure per-step evidence builder
+    tutor.ts                 Explorer adapter over the shared tutor engine
+    VersionToggle.svelte     Classic / Explorer control and menu
+    TaskApp.svelte           full browser app and compact anchor
+    StoryCard.svelte         five-step Behind the scenes card
+    StepRail.svelte          per-step rail for Under the hood
+    EvidenceCard.svelte      request / response / code / table receipts
+    TutorCard.svelte         prompt preview, edit and copy
   engine/
     types.ts                 lesson, scenario, step and composer shapes
     server.ts                fake HTTP server, response contract and trace
@@ -160,6 +184,7 @@ src/
     FlowArrow.svelte
 tests/
   tutor.test.mjs
+  v2.test.mjs
 ```
 
 A scripted lesson is data: a request, a starting table, the code shown in the server card, a prediction, a main scenario and break-it scenarios. Lesson 1 also has a `composer` config with its default method, path, body and presets. Lesson 5 has a `refresh` config with its two modes, per-mode predictions and two-sentence explanations. The generated composer steps and refresh-test state are engine logic, not hand-written UI.

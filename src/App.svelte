@@ -14,6 +14,7 @@
   import Zone from './components/Zone.svelte'
   import ZoneBoundary from './components/ZoneBoundary.svelte'
   import { tick } from 'svelte'
+  import type { Snippet } from 'svelte'
   import { lessons } from './lessons'
   import { Player } from './engine/player.svelte'
   import { previewRun, simulate } from './engine/server'
@@ -29,6 +30,12 @@
   import { SHOW_PREDICTIONS } from './engine/features'
   import { buildSnapshot } from './engine/tutor'
   import type { Box } from './engine/types'
+
+  let {
+    versionToggle,
+  }: {
+    versionToggle?: Snippet
+  } = $props()
 
   const player = new Player(lessons)
 
@@ -306,6 +313,10 @@
         </button>
       {/each}
     </nav>
+
+    {#if versionToggle}
+      {@render versionToggle()}
+    {/if}
   </header>
 
   <main class="lesson">
