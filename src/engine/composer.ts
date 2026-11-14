@@ -1,4 +1,4 @@
-import type { BrowserMode, Method, Step } from './types'
+import type { BrowserMode, Method, Payload, Step } from './types'
 import type { Run } from './server'
 
 export type StatusCode = 200 | 201 | 400 | 404 | 405
@@ -144,6 +144,202 @@ export function failureLocation(run: Run): string {
   }
 }
 
+function parseBody(run: Run): { ok: true; value: unknown } | { ok: false } {
+  try {
+    return { ok: true, value: JSON.parse(run.request?.body ?? '') }
+  } catch {
+    return { ok: false }
+  }
+}
+
+type TitleResult =
+  | { kind: 'text'; value: string }
+  | { kind: 'missing' }
+  | { kind: 'invalid' }
+
+function titleValue(value: unknown): TitleResult {
+  if (value === null || typeof value !== 'object' || !('title' in value)) {
+    return { kind: 'missing' }
+  }
+  const title = (value as { title?: unknown }).title
+  if (typeof title !== 'string') return { kind: 'invalid' }
+  return { kind: 'text', value: title }
+}
+
+function jsonText(value: unknown) {
+  return JSON.stringify(value, null, 2)
+}
+
+function objectText(value: unknown) {
+  if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+    const entries = Object.entries(value)
+    if (entries.length === 0) return '{}'
+    return `{ ${entries
+      .map(([key, item]) => `${key}: ${JSON.stringify(item)}`)
+      .join(', ')} }`
+  }
+  return JSON.stringify(value)
+}
+
+function isJson(text: string) {
+  try {
+    JSON.parse(text)
+    return true
+  } catch {
+    return false
+  }
+}
+
+function payloadText(run: Run): Payload | undefined {
+  if (!run.request || run.request.method !== 'POST') return undefined
+
+  const parsed = parseBody(run)
+  if (!parsed.ok) {
+    return {
+      box: 'browser',
+      shape: 'text',
+      label: 'Text in the composer',
+      value: run.request.body || '(empty body)',
+      note: 'This is the text you sent; it is not valid JSON yet.',
+    }
+  }
+
+  const title = titleValue(parsed.value)
+  if (title.kind === 'text') {
+    return {
+      box: 'browser',
+      shape: 'text',
+      label: 'Form field text',
+      value: title.value || '(empty)',
+      note: 'The title is plain text before the browser serializes it.',
+    }
+  }
+
+  return {
+    box: 'browser',
+    shape: 'text',
+    label: 'Form field text',
+    value: title.kind === 'invalid' ? '(not text)' : '(no title)',
+    note:
+      title.kind === 'invalid'
+        ? 'The title field is not text, so the server cannot use it.'
+        : 'The JSON has no title field.',
+  }
+}
+
+function payloadRequest(run: Run): Payload | undefined {
+  if (!run.request || run.request.body === null) return undefined
+  const body = run.request.body
+  return {
+    box: 'api',
+    shape: 'json-request',
+    label: 'JSON string in the request',
+    value: body || '(empty body)',
+    note: isJson(body)
+      ? 'The browser serializes the request as JSON for the wire.'
+      : 'This text is not valid JSON; the server will reject it.',
+  }
+}
+
+function payloadInvalidJson(run: Run): Payload | undefined {
+  if (!run.request || run.request.method !== 'POST') return undefined
+  const parsed = parseBody(run)
+  if (parsed.ok) return undefined
+  return {
+    box: 'server',
+    shape: 'json-request',
+    label: 'Invalid JSON in the request',
+    value: run.request.body || '(empty body)',
+    note: 'The server cannot parse this text into a JavaScript object.',
+  }
+}
+
+function payloadObject(run: Run): Payload | undefined {
+  if (!run.request || run.request.method !== 'POST') return undefined
+  const parsed = parseBody(run)
+  if (!parsed.ok) return undefined
+
+  const title = titleValue(parsed.value)
+  const isObject =
+    parsed.value !== null &&
+    typeof parsed.value === 'object' &&
+    !Array.isArray(parsed.value)
+
+  return {
+    box: 'server',
+    shape: 'object',
+    label: isObject
+      ? 'JavaScript object on the server'
+      : 'JavaScript value on the server',
+    value: objectText(parsed.value),
+    note:
+      title.kind === 'text' && title.value.trim()
+        ? 'The server parses the JSON into a JavaScript object.'
+        : 'The server parses the JSON, but the object has no usable title.',
+  }
+}
+
+function payloadRow(run: Run): Payload | undefined {
+  if (run.request?.method === 'GET') {
+    const rows = run.tasksAfter
+      .map((task) => `${task.id} · ${task.title}`)
+      .join('\n')
+    return {
+      box: 'database',
+      shape: 'row',
+      label: 'Rows in the table',
+      value: rows || '(no rows)',
+      note: 'The database returns the stored rows to the server.',
+    }
+  }
+
+  if (!run.inserted) return undefined
+  return {
+    box: 'database',
+    shape: 'row',
+    label: 'Row in the table',
+    value: `id ${run.inserted.id} · ${run.inserted.title}`,
+    note: 'The database stores the object as a row.',
+  }
+}
+
+function payloadResponse(run: Run): Payload | undefined {
+  if (!run.response || run.response.status >= 400) return undefined
+  return {
+    box: 'api',
+    shape: 'json-response',
+    label: 'JSON string in the response',
+    value: jsonText(run.response.body),
+    note:
+      run.request?.method === 'GET'
+        ? 'The server serializes the task rows into a JSON array.'
+        : 'The server serializes the saved row into JSON for the response.',
+  }
+}
+
+function payloadList(run: Run): Payload | undefined {
+  if (!run.response || run.response.status >= 400) return undefined
+  if (run.request?.method === 'GET') {
+    const items = run.tasksAfter.map((task) => task.title).join('\n')
+    return {
+      box: 'browser',
+      shape: 'list-item',
+      label: 'List items in the browser',
+      value: items || '(empty list)',
+      note: 'The browser turns each JSON array entry into a list item.',
+    }
+  }
+
+  if (!run.inserted) return undefined
+  return {
+    box: 'browser',
+    shape: 'list-item',
+    label: 'List item in the browser',
+    value: run.inserted.title,
+    note: 'The browser parses the JSON and renders a list item.',
+  }
+}
+
 /**
  * Builds the walkthrough from what the fake server actually did. A 404 or 405
  * never gets a server-code or database step; a parse or validation failure
@@ -157,6 +353,7 @@ export function stepsForRun(run: Run): Step[] {
       active: 'browser',
       stage: 'click',
       explanation: `You pressed Send. The browser builds ${method} ${path}, but nothing has left yet.`,
+      payload: payloadText(run),
     },
     {
       active: 'browser',
@@ -165,6 +362,7 @@ export function stepsForRun(run: Run): Step[] {
         method === 'POST'
           ? `The browser sends ${method} ${path} with the JSON body.`
           : `The browser sends ${method} ${path}.`,
+      payload: payloadRequest(run),
     },
   ]
 
@@ -189,6 +387,7 @@ export function stepsForRun(run: Run): Step[] {
       active: 'api',
       stage: 'route',
       explanation: `The router has no route for ${method} ${path}, so it stops at the API layer.`,
+      payload: payloadRequest(run),
     })
     steps.push({
       active: 'api',
@@ -210,6 +409,7 @@ export function stepsForRun(run: Run): Step[] {
       active: 'api',
       stage: 'route',
       explanation: `The path ${path} exists, but it does not accept ${method}. The router stops here.`,
+      payload: payloadRequest(run),
     })
     steps.push({
       active: 'api',
@@ -231,6 +431,7 @@ export function stepsForRun(run: Run): Step[] {
     stage: 'route',
     line: 2,
     explanation: `The router matches ${method} ${path} to a handler.`,
+    payload: payloadRequest(run),
   })
 
   if (method === 'GET') {
@@ -246,18 +447,21 @@ export function stepsForRun(run: Run): Step[] {
       line: 3,
       explanation:
         'The database runs SELECT * FROM tasks and returns the rows.',
+      payload: payloadRow(run),
     })
     steps.push({
       active: 'api',
       stage: 'respond',
       line: 3,
       explanation: 'The server sends 200 OK with the tasks as a JSON array.',
+      payload: payloadResponse(run),
     })
     steps.push({
       active: 'browser',
       stage: 'done',
       explanation:
         'The browser renders the list. GET only reads; it does not change the database.',
+      payload: payloadList(run),
     })
     return steps
   }
@@ -270,6 +474,7 @@ export function stepsForRun(run: Run): Step[] {
         line: 1,
         explanation:
           'The JSON body parser cannot parse the body, so the request stops before the handler line.',
+        payload: payloadInvalidJson(run),
       })
       steps.push({
         active: 'api',
@@ -293,6 +498,7 @@ export function stepsForRun(run: Run): Step[] {
         line: 3,
         explanation:
           'The handler reads title from the parsed JSON body. It is missing or empty.',
+        payload: payloadObject(run),
       })
       steps.push({
         active: 'server',
@@ -300,6 +506,7 @@ export function stepsForRun(run: Run): Step[] {
         line: 4,
         explanation:
           'The guard on line 4 rejects the request with 400 before the insert.',
+        payload: payloadObject(run),
       })
       steps.push({
         active: 'api',
@@ -323,6 +530,7 @@ export function stepsForRun(run: Run): Step[] {
         stage: 'code',
         line: 2,
         explanation: 'The handler starts but cannot complete the request.',
+        payload: payloadObject(run),
       })
       steps.push({
         active: 'api',
@@ -345,6 +553,7 @@ export function stepsForRun(run: Run): Step[] {
       line: 3,
       explanation:
         'The handler reads title from the parsed JSON body and checks that it is not empty.',
+      payload: payloadObject(run),
     })
     steps.push({
       active: 'database',
@@ -352,6 +561,7 @@ export function stepsForRun(run: Run): Step[] {
       line: 5,
       explanation:
         'The handler inserts the row. The database, not the browser, writes the data.',
+      payload: payloadRow(run),
     })
     steps.push({
       active: 'api',
@@ -359,12 +569,14 @@ export function stepsForRun(run: Run): Step[] {
       line: 6,
       explanation:
         'The server sends 201 Created and the saved task as JSON.',
+      payload: payloadResponse(run),
     })
     steps.push({
       active: 'browser',
       stage: 'done',
       explanation:
         'The browser adds the saved task to the list. The round trip is complete.',
+      payload: payloadList(run),
     })
     return steps
   }

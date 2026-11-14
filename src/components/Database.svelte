@@ -1,11 +1,27 @@
 <script lang="ts">
   import type { DatabaseView } from '../engine/view'
+  import type { Payload } from '../engine/types'
   import Card from './Card.svelte'
+  import PayloadToken from './PayloadToken.svelte'
 
-  let { view, active }: { view: DatabaseView; active: boolean } = $props()
+  let {
+    view,
+    active,
+    payload,
+  }: {
+    view: DatabaseView
+    active: boolean
+    payload: Payload | null
+  } = $props()
 </script>
 
 <Card index="4" title="Database" meta="Table: tasks" {active}>
+  {#if payload}
+    <div class="db-payload">
+      <PayloadToken {payload} />
+    </div>
+  {/if}
+
   {#if view.locked}
     <div class="db-lock">Locked · the browser cannot open this table.</div>
   {/if}

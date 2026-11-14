@@ -1,8 +1,18 @@
 <script lang="ts">
   import type { ServerView } from '../engine/view'
+  import type { Payload } from '../engine/types'
   import Card from './Card.svelte'
+  import PayloadToken from './PayloadToken.svelte'
 
-  let { view, active }: { view: ServerView; active: boolean } = $props()
+  let {
+    view,
+    active,
+    payload,
+  }: {
+    view: ServerView
+    active: boolean
+    payload: Payload | null
+  } = $props()
 
   const meta = $derived(
     view.status === 'offline'
@@ -15,6 +25,12 @@
 
 <Card index="3" title="Server code" {meta} {active}>
   <div class="card-body code-body">
+    {#if payload}
+      <div class="code-payload">
+        <PayloadToken {payload} />
+      </div>
+    {/if}
+
     <div class="code" class:is-off={!view.on}>
       {#each view.lines as line, index}
         <div class="code-line" class:active={view.activeLine === index + 1}>

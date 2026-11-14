@@ -36,6 +36,7 @@ The first deployment can take a minute. The site will be available at `https://<
 - Four lessons: Add a task, Load the list, When things fail, Who talks to the database.
 - Lesson 1 uses the request composer: method (GET/POST/DELETE), path, JSON body, a required status prediction, and Send.
 - The composer walkthrough auto-plays from the real response. Step and Back pause it for slow-motion inspection.
+- A payload token follows the data through the pipeline, changing from form text to request JSON, a server object, a table row, response JSON and a list item.
 - The composer presets cover a valid POST, GET, empty title, invalid JSON, unknown path and wrong method.
 - Lessons 2–4 keep their scripted walkthroughs. Their browser action still highlights the prediction, and locking in starts the request.
 - Seven-step (or shorter) walkthroughs with an active card, highlighted server line, database query and live JSON response.
@@ -59,6 +60,21 @@ There is no backend, API call or real database. A small fake server in `src/engi
 The trace records `matched`, `methodAllowed`, `parsed`, `failure` and `reached.api/server/database`, so the animation can stop at the layer where the request actually failed. `simulate(requestSpec, tasks, options)` adapts the scripted lesson data onto the same server.
 
 `stepsForRun(run)` in `src/engine/composer.ts` turns that trace into the composer walkthrough. A 404 or 405 gets route and response steps only; invalid JSON and validation stop in server code; only a successful write gets a database step.
+
+### Payload shapes
+
+Each composer step can carry a `Payload` with a target box, a shape, a label, a value and one plain sentence. The successful create flow is:
+
+1. `Form field text` in the browser
+2. `JSON string in the request` in the API card
+3. `JavaScript object on the server` in the server card
+4. `Row in the table` in the database card
+5. `JSON string in the response` in the API card
+6. `List item in the browser` in the browser card
+
+A GET starts its payload at the database rows and returns the response array and list items. A failure stops the token at the layer that failed; it never shows a row or response payload that did not happen.
+
+`PayloadToken.svelte` slides and fades the token into the matching card over 160ms. When `prefers-reduced-motion: reduce` is set, the duration is 0.
 
 ## Structure
 
@@ -86,6 +102,7 @@ src/
     StatusPrediction.svelte
     ComposerPresets.svelte
     ResultPanel.svelte
+    PayloadToken.svelte
     PredictionPanel.svelte
     StepControls.svelte
     BreakItPanel.svelte
@@ -110,6 +127,8 @@ The UI should stay lesson-agnostic. If a lesson needs custom UI code, the data s
 - Lesson 1 puts the composer above the flow so the learner starts by sending a request, not by pressing a dead button.
 - The status prediction is required before Send. Pressing Send without one shows “Choose the status you expect first.” and focuses the first option.
 - The composer auto-plays at 800ms per step. Pressing Step or Back pauses auto-play and switches to manual inspection.
+- The payload token is rendered in the card for the layer that currently owns the data, so it visibly crosses from browser to API to server to database and back.
+- The payload transition is a short slide/fade. Reduced-motion users get an instant switch.
 - Composer presets are lesson data, not hand-written buttons in the UI.
 - Lessons 2–4 keep the mockup's Back button, segmented progress bar and Break it panel.
 - Scripted break-it scenarios are locked until the learner locks in a prediction, so the predict-before-reveal rule is enforced.

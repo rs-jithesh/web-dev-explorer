@@ -1,6 +1,8 @@
 <script lang="ts">
   import type { BrowserView } from '../engine/view'
+  import type { Payload } from '../engine/types'
   import Card from './Card.svelte'
+  import PayloadToken from './PayloadToken.svelte'
 
   let {
     view,
@@ -9,6 +11,7 @@
     editable,
     canTrigger,
     showControls = true,
+    payload,
     onTitle,
     onTrigger,
   }: {
@@ -18,6 +21,7 @@
     editable: boolean
     canTrigger: boolean
     showControls?: boolean
+    payload: Payload | null
     onTitle: (value: string) => void
     onTrigger: () => void
   } = $props()
@@ -25,6 +29,10 @@
 
 <Card index="1" title="Browser" meta="Frontend" {active}>
   <div class="card-body">
+    {#if payload}
+      <PayloadToken {payload} />
+    {/if}
+
     <div class="url-pill">localhost:5173/todo</div>
 
     {#if showControls}

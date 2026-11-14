@@ -35,11 +35,28 @@ export interface RequestSpec {
   body?: string
 }
 
+export type PayloadShape =
+  | 'text'
+  | 'json-request'
+  | 'object'
+  | 'row'
+  | 'json-response'
+  | 'list-item'
+
+export interface Payload {
+  box: Box
+  shape: PayloadShape
+  label: string
+  value: string
+  note: string
+}
+
 export interface Step {
   active: Box
   stage: Stage
   line?: number
   explanation: string
+  payload?: Payload
 }
 
 export interface Scenario {

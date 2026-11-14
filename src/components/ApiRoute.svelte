@@ -1,8 +1,18 @@
 <script lang="ts">
   import type { ApiView } from '../engine/view'
+  import type { Payload } from '../engine/types'
   import Card from './Card.svelte'
+  import PayloadToken from './PayloadToken.svelte'
 
-  let { view, active }: { view: ApiView; active: boolean } = $props()
+  let {
+    view,
+    active,
+    payload,
+  }: {
+    view: ApiView
+    active: boolean
+    payload: Payload | null
+  } = $props()
 
   const labels: Record<number, string> = {
     200: 'OK',
@@ -16,6 +26,10 @@
 
 <Card index="2" title="API route" meta="HTTP" {active}>
   <div class="card-body">
+    {#if payload}
+      <PayloadToken {payload} />
+    {/if}
+
     <div class="api-block">
       <span class="lbl">Request</span>
       {#if view.request}

@@ -157,6 +157,7 @@
       viewCode,
     ),
   )
+  const payload = $derived(player.step?.payload ?? null)
 
   const browserAction = $derived(lesson.mode === 'load' ? 'Reload' : 'Add')
 
@@ -278,15 +279,28 @@
         editable={!isComposer && player.isMain && player.stepIndex < 0}
         canTrigger={!isComposer && player.canTrigger}
         showControls={!isComposer}
+        payload={payload?.box === 'browser' ? payload : null}
         onTitle={(value) => player.editTitle(value)}
         onTrigger={handleTrigger}
       />
       <FlowArrow />
-      <ApiRoute view={view.api} active={view.active === 'api'} />
+      <ApiRoute
+        view={view.api}
+        active={view.active === 'api'}
+        payload={payload?.box === 'api' ? payload : null}
+      />
       <FlowArrow />
-      <ServerCode view={view.server} active={view.active === 'server'} />
+      <ServerCode
+        view={view.server}
+        active={view.active === 'server'}
+        payload={payload?.box === 'server' ? payload : null}
+      />
       <FlowArrow />
-      <Database view={view.database} active={view.active === 'database'} />
+      <Database
+        view={view.database}
+        active={view.active === 'database'}
+        payload={payload?.box === 'database' ? payload : null}
+      />
     </div>
 
     <div class="lower" bind:this={lowerEl}>
