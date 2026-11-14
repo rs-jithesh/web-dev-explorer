@@ -17,7 +17,7 @@ The app has two experience modes, selected from the quiet **Classic / Explorer**
 - **Classic** is the original five-lesson flow. Its components, lesson data and styles are unchanged.
 - **Explorer** is the new v2 walkthrough for adding a task. It starts inside the app, shrinks the app into an anchor beside the explanation, and then opens the wire details for one step at a time. Use the depth control or keys `1`, `2` and `3`; `Esc` moves back one depth.
 
-The mode is stored in the URL hash (`#classic` or `#explorer`) and in `localStorage`, falling back to Classic when storage is unavailable. The default is Classic until the Explorer build is ready to become the default.
+The mode is stored in the URL hash (`#classic` or `#explorer`) and in `localStorage`, falling back to Classic when storage is unavailable. Explorer is the default for new visitors; Classic remains available from the toggle and at `#classic`.
 
 The v2 prompt preview still uses the shared tutor engine: `buildSnapshot()` and `buildPrompt()` build the prompt; v2 only supplies the current story step, request, response and evidence. `tests/v2.test.mjs` covers the five-step story, step-3 and step-4 evidence, title validation and the step-specific tutor prompt.
 

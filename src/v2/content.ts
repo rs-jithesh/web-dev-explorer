@@ -222,5 +222,5 @@ export const VERSION_COPY = {
   },
 }
 
-export const DEFAULT_VIEW = 'classic' as const
+export const DEFAULT_VIEW = 'explorer' as const
 export type ViewName = 'classic' | 'explorer'
