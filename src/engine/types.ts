@@ -83,6 +83,23 @@ export interface ComposerConfig {
   presets: ComposerPreset[]
 }
 
+export type RefreshModeId = 'browser' | 'api'
+
+export type RefreshPhase = 'editing' | 'refreshing' | 'done'
+
+export interface RefreshModeData {
+  id: RefreshModeId
+  label: string
+  description: string
+  prediction: Prediction
+  explanation: string
+}
+
+export interface RefreshConfig {
+  modes: RefreshModeData[]
+  startingTasks?: Task[]
+}
+
 export interface Lesson {
   id: string
   navLabel: string
@@ -97,4 +114,5 @@ export interface Lesson {
   breakIts: Scenario[]
   dbNote?: string
   composer?: ComposerConfig
+  refresh?: RefreshConfig
 }

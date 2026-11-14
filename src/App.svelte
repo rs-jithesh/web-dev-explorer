@@ -9,6 +9,7 @@
   import BreakItPanel from './components/BreakItPanel.svelte'
   import RequestComposer from './components/RequestComposer.svelte'
   import ResultPanel from './components/ResultPanel.svelte'
+  import RefreshTest from './components/RefreshTest.svelte'
   import { tick } from 'svelte'
   import { lessons } from './lessons'
   import { Player } from './engine/player.svelte'
@@ -249,121 +250,125 @@
       <p class="intro">{lesson.intro}</p>
     </section>
 
-    {#if isComposer}
-      <div bind:this={composerEl}>
-        <RequestComposer
-          method={player.composerMethod}
-          path={player.composerPath}
-          body={player.composerBody}
-          status={player.composerStatus}
-          sent={player.composerSent}
-          validation={player.composerValidation}
-          presets={lesson.composer?.presets ?? []}
-          actualStatus={player.composerActualStatus}
-          finished={player.statusFinished}
-          onMethod={(method) => player.setComposerMethod(method)}
-          onPath={(path) => player.setComposerPath(path)}
-          onBody={(body) => player.setComposerBody(body)}
-          onStatus={(status) => player.setComposerStatus(status)}
-          onSend={handleSend}
-          onPreset={(preset) => player.applyComposerPreset(preset)}
+    {#if lesson.refresh}
+      <RefreshTest config={lesson.refresh} />
+    {:else}
+      {#if isComposer}
+        <div bind:this={composerEl}>
+          <RequestComposer
+            method={player.composerMethod}
+            path={player.composerPath}
+            body={player.composerBody}
+            status={player.composerStatus}
+            sent={player.composerSent}
+            validation={player.composerValidation}
+            presets={lesson.composer?.presets ?? []}
+            actualStatus={player.composerActualStatus}
+            finished={player.statusFinished}
+            onMethod={(method) => player.setComposerMethod(method)}
+            onPath={(path) => player.setComposerPath(path)}
+            onBody={(body) => player.setComposerBody(body)}
+            onStatus={(status) => player.setComposerStatus(status)}
+            onSend={handleSend}
+            onPreset={(preset) => player.applyComposerPreset(preset)}
+          />
+        </div>
+      {/if}
+
+      <div class="flow" bind:this={flowEl} tabindex="-1">
+        <Browser
+          view={view.browser}
+          active={view.active === 'browser'}
+          title={isComposer ? '' : player.title}
+          editable={!isComposer && player.isMain && player.stepIndex < 0}
+          canTrigger={!isComposer && player.canTrigger}
+          showControls={!isComposer}
+          payload={payload?.box === 'browser' ? payload : null}
+          onTitle={(value) => player.editTitle(value)}
+          onTrigger={handleTrigger}
+        />
+        <FlowArrow />
+        <ApiRoute
+          view={view.api}
+          active={view.active === 'api'}
+          payload={payload?.box === 'api' ? payload : null}
+        />
+        <FlowArrow />
+        <ServerCode
+          view={view.server}
+          active={view.active === 'server'}
+          payload={payload?.box === 'server' ? payload : null}
+        />
+        <FlowArrow />
+        <Database
+          view={view.database}
+          active={view.active === 'database'}
+          payload={payload?.box === 'database' ? payload : null}
         />
       </div>
-    {/if}
 
-    <div class="flow" bind:this={flowEl} tabindex="-1">
-      <Browser
-        view={view.browser}
-        active={view.active === 'browser'}
-        title={isComposer ? '' : player.title}
-        editable={!isComposer && player.isMain && player.stepIndex < 0}
-        canTrigger={!isComposer && player.canTrigger}
-        showControls={!isComposer}
-        payload={payload?.box === 'browser' ? payload : null}
-        onTitle={(value) => player.editTitle(value)}
-        onTrigger={handleTrigger}
-      />
-      <FlowArrow />
-      <ApiRoute
-        view={view.api}
-        active={view.active === 'api'}
-        payload={payload?.box === 'api' ? payload : null}
-      />
-      <FlowArrow />
-      <ServerCode
-        view={view.server}
-        active={view.active === 'server'}
-        payload={payload?.box === 'server' ? payload : null}
-      />
-      <FlowArrow />
-      <Database
-        view={view.database}
-        active={view.active === 'database'}
-        payload={payload?.box === 'database' ? payload : null}
-      />
-    </div>
+      <div class="lower" bind:this={lowerEl}>
+        {#if isComposer}
+          <ResultPanel
+            sent={player.composerSent}
+            finished={player.statusFinished}
+            run={player.composerRun}
+            guess={player.composerStatus}
+            verdict={player.statusVerdict}
+          />
+        {:else}
+          <PredictionPanel
+            lessonId={lesson.id}
+            question={lesson.prediction.question}
+            options={lesson.prediction.options}
+            correctIndex={lesson.prediction.correctIndex}
+            reason={lesson.prediction.reason}
+            selected={player.selected}
+            locked={player.locked}
+            verdict={player.verdict}
+            inBreakIt={!player.isMain}
+            prompted={player.prompted}
+            validation={player.validation}
+            onSelect={(index) => player.selectGuess(index)}
+            onLock={handleLock}
+          />
+        {/if}
 
-    <div class="lower" bind:this={lowerEl}>
-      {#if isComposer}
-        <ResultPanel
-          sent={player.composerSent}
-          finished={player.statusFinished}
-          run={player.composerRun}
-          guess={player.composerStatus}
-          verdict={player.statusVerdict}
+        <StepControls
+          title={isComposer
+            ? 'Walkthrough'
+            : player.isMain
+              ? 'Walkthrough'
+              : `Break it · ${scenario.label}`}
+          meta={stepMeta}
+          stepIndex={player.stepIndex}
+          total={player.totalSteps}
+          explanation={player.step?.explanation ?? ''}
+          canStep={player.canStep}
+          canBack={player.canBack}
+          atEnd={player.atEnd}
+          ready={isComposer ? player.composerSent : player.locked !== null}
+          hint={isComposer
+            ? 'Choose a status and press Send to start.'
+            : 'Step unlocks after you lock in a guess.'}
+          readyText={readyText}
+          onStep={handleStep}
+          onBack={handleBack}
+          onReset={handleReset}
         />
-      {:else}
-        <PredictionPanel
-          lessonId={lesson.id}
-          question={lesson.prediction.question}
-          options={lesson.prediction.options}
-          correctIndex={lesson.prediction.correctIndex}
-          reason={lesson.prediction.reason}
-          selected={player.selected}
-          locked={player.locked}
-          verdict={player.verdict}
-          inBreakIt={!player.isMain}
-          prompted={player.prompted}
-          validation={player.validation}
-          onSelect={(index) => player.selectGuess(index)}
-          onLock={handleLock}
+      </div>
+
+      {#if !isComposer}
+        <BreakItPanel
+          scenarios={lesson.breakIts}
+          activeId={player.scenarioId}
+          locked={player.locked !== null}
+          onSelect={(id) => player.selectScenario(id)}
+          onMain={() => player.selectScenario(null)}
         />
       {/if}
 
-      <StepControls
-        title={isComposer
-          ? 'Walkthrough'
-          : player.isMain
-            ? 'Walkthrough'
-            : `Break it · ${scenario.label}`}
-        meta={stepMeta}
-        stepIndex={player.stepIndex}
-        total={player.totalSteps}
-        explanation={player.step?.explanation ?? ''}
-        canStep={player.canStep}
-        canBack={player.canBack}
-        atEnd={player.atEnd}
-        ready={isComposer ? player.composerSent : player.locked !== null}
-        hint={isComposer
-          ? 'Choose a status and press Send to start.'
-          : 'Step unlocks after you lock in a guess.'}
-        readyText={readyText}
-        onStep={handleStep}
-        onBack={handleBack}
-        onReset={handleReset}
-      />
-    </div>
-
-    {#if !isComposer}
-      <BreakItPanel
-        scenarios={lesson.breakIts}
-        activeId={player.scenarioId}
-        locked={player.locked !== null}
-        onSelect={(id) => player.selectScenario(id)}
-        onMain={() => player.selectScenario(null)}
-      />
+      <p class="sr-only" aria-live="polite">{liveText}</p>
     {/if}
-
-    <p class="sr-only" aria-live="polite">{liveText}</p>
   </main>
 </div>
