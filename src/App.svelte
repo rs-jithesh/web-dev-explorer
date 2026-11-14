@@ -7,6 +7,7 @@
   import PredictionPanel from './components/PredictionPanel.svelte'
   import StepControls from './components/StepControls.svelte'
   import BreakItPanel from './components/BreakItPanel.svelte'
+  import { tick } from 'svelte'
   import { lessons } from './lessons'
   import { Player } from './engine/player.svelte'
   import { simulate } from './engine/server'
@@ -14,6 +15,48 @@
   import type { Box } from './engine/types'
 
   const player = new Player(lessons)
+
+  let flowEl: HTMLDivElement
+  let lowerEl: HTMLDivElement
+
+  function scrollBehavior(): ScrollBehavior {
+    return typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      ? 'auto'
+      : 'smooth'
+  }
+
+  async function handleTrigger() {
+    const result = player.trigger()
+    if (result === 'ignored') return
+
+    await tick()
+
+    if (result === 'started') {
+      flowEl?.focus({ preventScroll: true })
+      return
+    }
+
+    lowerEl?.scrollIntoView({ behavior: scrollBehavior(), block: 'center' })
+    lowerEl
+      ?.querySelector<HTMLInputElement>('input[type="radio"]')
+      ?.focus({ preventScroll: true })
+  }
+
+  async function handleLock() {
+    const result = player.lockGuess()
+    if (result === 'invalid') return
+
+    await tick()
+
+    if (result === 'started') {
+      flowEl?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' })
+      flowEl?.focus({ preventScroll: true })
+      return
+    }
+
+    document.getElementById('step-button')?.focus({ preventScroll: true })
+  }
 
   const lesson = $derived(player.lesson)
   const scenario = $derived(player.scenario)
@@ -27,9 +70,11 @@
     buildView(lesson, scenario, player.step, run, player.title),
   )
 
+  const browserAction = $derived(lesson.mode === 'load' ? 'Reload' : 'Add')
+
   const readyText = $derived(
     player.isMain
-      ? 'Read the prediction, lock in your guess, then press Step to follow the request.'
+      ? `Press ${browserAction} to start. When the prediction opens, lock in a guess and the request will run.`
       : `Press Step to follow this break-it case: ${scenario.label.toLowerCase()}.`,
   )
 
@@ -99,7 +144,7 @@
       <p class="intro">{lesson.intro}</p>
     </section>
 
-    <div class="flow">
+    <div class="flow" bind:this={flowEl} tabindex="-1">
       <Browser
         view={view.browser}
         active={view.active === 'browser'}
@@ -107,7 +152,7 @@
         editable={player.isMain && player.stepIndex < 0}
         canTrigger={player.canTrigger}
         onTitle={(value) => player.editTitle(value)}
-        onTrigger={() => player.trigger()}
+        onTrigger={handleTrigger}
       />
       <FlowArrow />
       <ApiRoute view={view.api} active={view.active === 'api'} />
@@ -117,7 +162,7 @@
       <Database view={view.database} active={view.active === 'database'} />
     </div>
 
-    <div class="lower">
+    <div class="lower" bind:this={lowerEl}>
       <PredictionPanel
         lessonId={lesson.id}
         question={lesson.prediction.question}
@@ -128,8 +173,10 @@
         locked={player.locked}
         verdict={player.verdict}
         inBreakIt={!player.isMain}
+        prompted={player.prompted}
+        validation={player.validation}
         onSelect={(index) => player.selectGuess(index)}
-        onLock={() => player.lockGuess()}
+        onLock={handleLock}
       />
 
       <StepControls

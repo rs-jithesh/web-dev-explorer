@@ -11,6 +11,8 @@
     locked,
     verdict,
     inBreakIt,
+    prompted,
+    validation,
     onSelect,
     onLock,
   }: {
@@ -23,13 +25,29 @@
     locked: number | null
     verdict: 'correct' | 'wrong' | null
     inBreakIt: boolean
+    prompted: boolean
+    validation: string | null
     onSelect: (index: number) => void
     onLock: () => void
   } = $props()
+
+  const meta = $derived(
+    locked === null ? (prompted ? 'Action needed' : 'Not locked') : 'Locked in',
+  )
 </script>
 
-<Card title="Your prediction" meta={locked === null ? 'Not locked' : 'Locked in'}>
+<Card
+  title="Your prediction"
+  {meta}
+  highlight={prompted && locked === null}
+>
   <div class="card-body">
+    {#if prompted && locked === null}
+      <div class="prompt-box" role="status">
+        <strong>Before the request runs,</strong> lock in a guess.
+      </div>
+    {/if}
+
     <p class="prediction-q" id="prediction-question">{question}</p>
 
     <fieldset class="options" aria-labelledby="prediction-question">
@@ -59,17 +77,13 @@
     </fieldset>
 
     {#if locked === null}
-      <button
-        class="btn btn-primary lock-btn"
-        type="button"
-        onclick={onLock}
-        disabled={selected === null}
-      >
+      <button class="btn btn-primary lock-btn" type="button" onclick={onLock}>
         Lock in my guess
       </button>
-      <p class="hint">
-        Commit to a guess. The walkthrough unlocks after you lock it in.
-      </p>
+      {#if validation}
+        <p class="validation" role="alert">{validation}</p>
+      {/if}
+      <p class="hint">Pick one answer above, then press Lock in my guess.</p>
     {:else if inBreakIt}
       <p class="hint">
         Break-it case. Return to the main flow to see the lesson answer.

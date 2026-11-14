@@ -46,6 +46,7 @@
 
     <div class="controls">
       <button
+        id="step-button"
         class="btn btn-primary"
         type="button"
         onclick={onStep}
@@ -60,7 +61,7 @@
     </div>
 
     {#if locked === null}
-      <p class="hint">Lock in a guess above to unlock the walkthrough.</p>
+      <p class="hint">Step unlocks after you lock in a guess.</p>
     {/if}
   </div>
 </Card>

@@ -181,6 +181,12 @@ h1 {
   align-items: stretch;
 }
 
+.flow:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 12px;
+}
+
 .arrow {
   display: flex;
   align-items: center;
@@ -206,7 +212,8 @@ h1 {
   background: #fff;
 }
 
-.card-active {
+.card-active,
+.card-highlight {
   border-color: var(--accent);
   box-shadow:
     0 0 0 1px var(--accent),
@@ -671,6 +678,27 @@ h1 {
 }
 
 /* Prediction */
+
+.prompt-box {
+  padding: 10px 12px;
+  border: 1px solid #c9d6f5;
+  border-radius: 6px;
+  background: #f4f7ff;
+  color: #26385f;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.prompt-box strong {
+  font-weight: 600;
+}
+
+.validation {
+  margin: 0;
+  color: var(--danger);
+  font-size: 12px;
+  line-height: 1.5;
+}
 
 .prediction-q {
   font-size: 15px;

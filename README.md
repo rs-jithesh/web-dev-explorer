@@ -34,7 +34,7 @@ The first deployment can take a minute. The site will be available at `https://<
 ## What is in version one
 
 - Four lessons: Add a task, Load the list, When things fail, Who talks to the database.
-- A prediction that must be locked in before the walkthrough unlocks.
+- The browser action starts the experience: if no guess is locked, Add (or Reload in Lesson 2) highlights the prediction and focuses the first option. Locking in then runs the request automatically.
 - Seven-step (or shorter) walkthroughs with an active card, highlighted server line, database query and live JSON response.
 - A collapsible Break it panel with real 400, 404, server-off and direct-database failure cases.
 - Keyboard-reachable controls and an `aria-live` announcement of the active box.
@@ -84,5 +84,7 @@ The UI should stay lesson-agnostic. If a lesson needs custom UI code, the data s
 - The mockup's Back button and segmented progress bar are included.
 - Break it is expanded by default but still collapsible, matching the mockup's bottom row.
 - Break-it scenarios are locked until the learner locks in a prediction, so the predict-before-reveal rule is enforced.
+- Clicking Add (or Reload in Lesson 2) without a locked guess highlights the prediction and focuses the first option. Locking in starts the request and returns focus to the flow; locking in manually leaves the learner in control of Step.
+- The lock button is never a dead control: pressing it without an answer shows “Choose an answer first.”
 - Returning from a break-it case restores the main flow at the step and title where the learner left it.
 - Reset returns the whole lesson to its starting state and unlocks the prediction again.

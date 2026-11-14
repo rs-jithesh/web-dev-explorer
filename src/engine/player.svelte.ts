@@ -12,6 +12,9 @@ export class Player {
   stepIndex = $state(-1)
   selected = $state<number | null>(null)
   locked = $state<number | null>(null)
+  prompted = $state(false)
+  pendingStart = $state(false)
+  validation = $state<string | null>(null)
   title = $state('')
   mainTitle = $state('')
   mainStep = $state(-1)
@@ -59,7 +62,7 @@ export class Player {
   }
 
   get canTrigger(): boolean {
-    return this.locked !== null && this.stepIndex < 0
+    return this.stepIndex < 0
   }
 
   get request(): RequestSpec {
@@ -83,11 +86,29 @@ export class Player {
   selectGuess(index: number) {
     if (this.locked !== null) return
     this.selected = index
+    this.validation = null
   }
 
-  lockGuess() {
-    if (this.selected === null || this.locked !== null) return
+  lockGuess(): 'started' | 'locked' | 'invalid' {
+    if (this.locked !== null) return 'locked'
+    if (this.selected === null) {
+      this.validation = 'Choose an answer first.'
+      return 'invalid'
+    }
+
     this.locked = this.selected
+    this.validation = null
+    this.prompted = false
+
+    const shouldStart = this.pendingStart
+    this.pendingStart = false
+
+    if (shouldStart && this.stepIndex < 0) {
+      this.stepIndex = 0
+      return 'started'
+    }
+
+    return 'locked'
   }
 
   editTitle(value: string) {
@@ -95,10 +116,16 @@ export class Player {
     this.title = value
   }
 
-  trigger() {
-    if (!this.canTrigger) return false
-    this.stepIndex = 0
-    return true
+  trigger(): 'started' | 'prompt' | 'ignored' {
+    if (!this.canTrigger) return 'ignored'
+    if (this.locked !== null) {
+      this.stepIndex = 0
+      return 'started'
+    }
+
+    this.prompted = true
+    this.pendingStart = true
+    return 'prompt'
   }
 
   stepForward() {
@@ -109,6 +136,7 @@ export class Player {
   stepBack() {
     if (!this.canBack) return
     this.stepIndex -= 1
+    this.validation = null
   }
 
   selectScenario(id: string | null) {
@@ -118,6 +146,9 @@ export class Player {
     }
 
     this.scenarioId = id
+    this.prompted = false
+    this.pendingStart = false
+    this.validation = null
 
     if (id === null) {
       this.stepIndex = this.mainStep
@@ -134,6 +165,9 @@ export class Player {
     this.stepIndex = -1
     this.selected = null
     this.locked = null
+    this.prompted = false
+    this.pendingStart = false
+    this.validation = null
     this.title = this.lesson.main.request.title ?? this.lesson.inputDefault
     this.mainTitle = this.title
     this.mainStep = -1
