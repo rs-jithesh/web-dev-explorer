@@ -20,6 +20,17 @@ npm run preview
 
 The build uses a relative base (`base: './'`), so the `dist/` folder can be hosted at the root of a domain or under a GitHub Pages project path without changes.
 
+## Deploy to GitHub Pages
+
+The workflow in `.github/workflows/deploy.yml` builds the app and publishes `dist/` on every push to `main`, or when run manually from the Actions tab.
+
+1. Push the repo to GitHub.
+2. Open the repo's **Settings → Pages**.
+3. Under **Build and deployment**, set **Source** to **GitHub Actions**.
+4. Push to `main`, or run **Deploy to GitHub Pages** from the **Actions** tab.
+
+The first deployment can take a minute. The site will be available at `https://<owner>.github.io/web-dev-explorer/`.
+
 ## What is in version one
 
 - Four lessons: Add a task, Load the list, When things fail, Who talks to the database.
