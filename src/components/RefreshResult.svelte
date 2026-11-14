@@ -32,9 +32,7 @@
 <Card title="Result" {meta}>
   <div class="card-body">
     {#if phase === 'editing'}
-      <div class="notice">
-        Add a task, make a prediction, then press Refresh.
-      </div>
+      <div class="notice">Add a task, then press Refresh.</div>
       <p class="hint">The browser will clear its JavaScript state.</p>
     {:else if phase === 'refreshing'}
       <div class="notice">

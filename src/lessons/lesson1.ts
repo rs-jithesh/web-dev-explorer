@@ -17,7 +17,7 @@ export const lesson1: Lesson = {
   navLabel: '1 Add a task',
   title: 'Add a task',
   intro:
-    'Compose a request, predict the status, and send it. Follow it from the browser to the database and back.',
+    'Compose a request and send it. Follow it from the browser to the database and back.',
   mode: 'add',
   inputDefault: 'Buy milk',
   startingTasks: [

@@ -7,6 +7,7 @@
     prediction,
     phase,
     validation,
+    showPrediction,
     onSelect,
     onRefresh,
     onReset,
@@ -15,6 +16,7 @@
     prediction: number | null
     phase: RefreshPhase
     validation: string | null
+    showPrediction: boolean
     onSelect: (index: number) => void
     onRefresh: () => void
     onReset: () => void
@@ -23,44 +25,55 @@
   const editing = $derived(phase === 'editing')
   const finished = $derived(phase === 'done')
   const meta = $derived(
-    editing ? 'Prediction' : phase === 'refreshing' ? 'Reloading…' : 'Revealed',
+    editing
+      ? showPrediction
+        ? 'Prediction'
+        : 'Ready'
+      : phase === 'refreshing'
+        ? 'Reloading…'
+        : 'Revealed',
   )
 </script>
 
-<Card title="Before you refresh" {meta}>
+<Card
+  title={showPrediction ? 'Before you refresh' : 'Refresh the page'}
+  {meta}
+>
   <div class="card-body">
-    <p class="prediction-q" id="refresh-prediction-question">
-      {mode.prediction.question}
-    </p>
+    {#if showPrediction}
+      <p class="prediction-q" id="refresh-prediction-question">
+        {mode.prediction.question}
+      </p>
 
-    <fieldset
-      class="options"
-      aria-labelledby="refresh-prediction-question"
-      disabled={!editing}
-    >
-      {#each mode.prediction.options as option, index}
-        <label
-          class="option"
-          class:selected={prediction === index}
-          class:correct={finished && index === mode.prediction.correctIndex}
-          class:wrong={finished &&
-            prediction === index &&
-            index !== mode.prediction.correctIndex}
-        >
-          <input
-            type="radio"
-            name="refresh-prediction"
-            checked={prediction === index}
-            disabled={!editing}
-            onchange={() => onSelect(index)}
-          />
-          <span>{option}</span>
-        </label>
-      {/each}
-    </fieldset>
+      <fieldset
+        class="options"
+        aria-labelledby="refresh-prediction-question"
+        disabled={!editing}
+      >
+        {#each mode.prediction.options as option, index}
+          <label
+            class="option"
+            class:selected={prediction === index}
+            class:correct={finished && index === mode.prediction.correctIndex}
+            class:wrong={finished &&
+              prediction === index &&
+              index !== mode.prediction.correctIndex}
+          >
+            <input
+              type="radio"
+              name="refresh-prediction"
+              checked={prediction === index}
+              disabled={!editing}
+              onchange={() => onSelect(index)}
+            />
+            <span>{option}</span>
+          </label>
+        {/each}
+      </fieldset>
 
-    {#if validation}
-      <p class="validation" role="alert">{validation}</p>
+      {#if validation}
+        <p class="validation" role="alert">{validation}</p>
+      {/if}
     {/if}
 
     <div class="controls">
@@ -79,7 +92,9 @@
 
     <p class="hint">
       {editing
-        ? 'Add tasks above, choose what you expect, then refresh.'
+        ? showPrediction
+          ? 'Add tasks above, choose what you expect, then refresh.'
+          : 'Add tasks above, then refresh to clear the browser state.'
         : phase === 'refreshing'
           ? 'The browser is clearing its state.'
           : 'Reset or switch modes to run the test again.'}

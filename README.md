@@ -2,7 +2,9 @@
 
 A tiny interactive tool that teaches how a web app works by following one request from the browser, through the API and server code, into the database and back.
 
-The main lesson gives the learner a real request composer. They choose a method, path and JSON body, predict the status code, and send it. The walkthrough is generated from what the fake server actually did. The remaining lessons keep their scripted walkthroughs and **Break it** cases, and a final refresh test shows why the backend and database exist.
+The main lesson gives the learner a real request composer. They choose a method, path and JSON body and send it. The walkthrough is generated from what the fake server actually did. The remaining lessons keep their scripted walkthroughs and **Break it** cases, and a final refresh test shows why the backend and database exist.
+
+Prediction and lock-in UI is currently hidden behind `SHOW_PREDICTIONS = false`; Add, Reload, Send and Refresh run immediately. See [Prediction UI](#prediction-ui).
 
 ## Run it
 
@@ -34,16 +36,20 @@ The first deployment can take a minute. The site will be available at `https://<
 ## What is in version one
 
 - Five lessons: Add a task, Load the list, When things fail, Who talks to the database, and What survives a refresh?
-- Lesson 1 uses the request composer: method (GET/POST/DELETE), path, JSON body, a required status prediction, and Send. An Endpoint line shows the effective method and URL as the learner edits.
-- The composer walkthrough auto-plays from the real response. Step and Back pause it for slow-motion inspection.
+- Lesson 1 uses the request composer: method (GET/POST/DELETE), path, JSON body, and Send. An Endpoint line shows the effective method and URL as the learner edits.
+- The composer walkthrough auto-plays from the real response at 4 seconds per step. Step and Back pause it for slow-motion inspection.
 - A payload token follows the data through the pipeline, changing from form text to request JSON, a server object, a table row, response JSON and a list item.
 - The composer presets cover a valid POST, GET, empty title, invalid JSON, unknown path and wrong method.
-- Lessons 2–4 keep their scripted walkthroughs. Their browser action still highlights the prediction, and locking in starts the request.
+- Lessons 2–4 keep their scripted walkthroughs. Add or Reload starts the request immediately; prediction UI is hidden.
 - Seven-step (or shorter) walkthroughs with an active card, highlighted server line, database query and live JSON response.
 - A collapsible Break it panel on the scripted lessons, with 400, 404, server-off and direct-database cases.
-- The refresh test has two modes: **Browser only** and **Through the API and database**. The learner adds tasks, predicts what survives, then presses Refresh; browser-only tasks vanish, while API-backed tasks reload with GET /tasks.
+- The refresh test has two modes: **Browser only** and **Through the API and database**. The learner adds tasks, then presses Refresh; browser-only tasks vanish, while API-backed tasks reload with GET /tasks.
 - The API mode shows the persisted database rows and a request log, so the reload is visibly backed by data rather than a cached list.
 - Keyboard-reachable controls and an `aria-live` announcement of the active box and final result.
+
+## Prediction UI
+
+Prediction and lock-in are still implemented, but hidden with `SHOW_PREDICTIONS = false` in `src/engine/features.ts`. With the flag off, every Add, Reload, Send and Refresh runs immediately and no prediction or lock-in controls are rendered. Set the flag to `true` to restore the status prediction, the scripted lock-in gate and the refresh-test prediction.
 
 There is no backend, API call or real database. A small fake server in `src/engine/server.ts` takes a request object and returns a response object, so every status code is produced by the same logic the UI displays.
 
@@ -92,6 +98,7 @@ src/
     scenarios.ts             shared step scripts for the scripted lessons
     player.svelte.ts         player and composer store
     refresh.svelte.ts        refresh-test state, fake POST/GET calls and request log
+    features.ts              temporary feature flags (predictions are currently off)
   lessons/
     lesson1.ts ... lesson5.ts
     index.ts
@@ -134,13 +141,13 @@ The UI should stay lesson-agnostic. If a lesson needs custom UI code, the data s
 
 - The visual direction follows the supplied `First Screen` mockup: warm off-white background, Inter and JetBrains Mono, blue accent, rounded cards and a subtle glow on the active card.
 - Lesson 1 puts the composer above the flow so the learner starts by sending a request, not by pressing a dead button.
-- The status prediction is required before Send. Pressing Send without one shows “Choose the status you expect first.” and focuses the first option.
+- When `SHOW_PREDICTIONS` is enabled, the status prediction is required before Send. Pressing Send without one shows “Choose the status you expect first.” and focuses the first option.
 - The composer auto-plays at 4 seconds per step. Pressing Step or Back pauses auto-play and switches to manual inspection.
 - The payload token is rendered in the card for the layer that currently owns the data, so it visibly crosses from browser to API to server to database and back.
 - The payload transition is a short slide/fade. Reduced-motion users get an instant switch.
 - Composer presets are lesson data, not hand-written buttons in the UI.
 - The refresh test is a separate state machine because it is about persistence across requests, not one request walkthrough. Switching modes resets the test and the simulated database.
-- The refresh test makes the learner predict before Refresh. The two-sentence explanation appears only after the reload, so the result is not spoiled.
+- When predictions are enabled, the refresh test asks for a prediction before Refresh. The two-sentence explanation appears only after the reload, so the result is not spoiled.
 - Browser-only mode has no backend card controls and no request log. API mode shows the stored rows and every POST/GET, including the GET /tasks reload.
 - Lessons 2–4 keep the mockup's Back button, segmented progress bar and Break it panel.
 - Scripted break-it scenarios are locked until the learner locks in a prediction, so the predict-before-reveal rule is enforced.

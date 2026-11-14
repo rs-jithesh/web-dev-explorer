@@ -2,6 +2,7 @@
   import { onDestroy, tick } from 'svelte'
   import type { RefreshConfig } from '../engine/types'
   import { RefreshTestStore } from '../engine/refresh.svelte'
+  import { SHOW_PREDICTIONS } from '../engine/features'
   import RefreshBrowser from './RefreshBrowser.svelte'
   import RefreshBackend from './RefreshBackend.svelte'
   import RefreshPrediction from './RefreshPrediction.svelte'
@@ -33,7 +34,13 @@
         ? 'The browser state is cleared. Asking GET /tasks.'
         : 'The browser state is cleared. Reloading.'
       : test.phase === 'done'
-        ? `Result: ${test.modeId === 'browser' ? 'the tasks are gone.' : 'the tasks are still there.'} ${test.mode.explanation} ${test.verdict === 'correct' ? 'Your prediction was correct.' : 'Your prediction was wrong.'}`
+        ? `Result: ${test.modeId === 'browser' ? 'the tasks are gone.' : 'the tasks are still there.'} ${test.mode.explanation}${
+            SHOW_PREDICTIONS && test.verdict
+              ? test.verdict === 'correct'
+                ? ' Your prediction was correct.'
+                : ' Your prediction was wrong.'
+              : ''
+          }`
         : `Editing. ${test.browserTasks.length} ${test.browserTasks.length === 1 ? 'task' : 'tasks'} in the browser.`,
   )
 </script>
@@ -79,6 +86,7 @@
       prediction={test.prediction}
       phase={test.phase}
       validation={test.validation}
+      showPrediction={SHOW_PREDICTIONS}
       onSelect={(index) => (test.prediction = index)}
       onRefresh={handleRefresh}
       onReset={() => test.reset()}

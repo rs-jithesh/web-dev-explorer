@@ -7,6 +7,7 @@ import type {
   Task,
 } from './types'
 import { handleRequest } from './server'
+import { SHOW_PREDICTIONS } from './features'
 
 export interface RequestLogEntry {
   id: number
@@ -50,7 +51,13 @@ export class RefreshTestStore {
   }
 
   get verdict(): 'correct' | 'wrong' | null {
-    if (this.phase !== 'done' || this.prediction === null) return null
+    if (
+      !SHOW_PREDICTIONS ||
+      this.phase !== 'done' ||
+      this.prediction === null
+    ) {
+      return null
+    }
     return this.prediction === this.mode.prediction.correctIndex
       ? 'correct'
       : 'wrong'
@@ -119,7 +126,7 @@ export class RefreshTestStore {
 
   refresh(): 'started' | 'prompt' | 'ignored' {
     if (this.phase !== 'editing') return 'ignored'
-    if (this.prediction === null) {
+    if (SHOW_PREDICTIONS && this.prediction === null) {
       this.validation = 'Choose what you expect first.'
       return 'prompt'
     }

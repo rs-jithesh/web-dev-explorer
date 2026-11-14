@@ -77,7 +77,7 @@
 
     <p class="hint">
       {phase === 'editing'
-        ? 'Add the tasks you want to test, then make a prediction below.'
+        ? 'Add the tasks you want to test, then refresh.'
         : phase === 'done'
           ? 'The refresh is complete. Reset or switch modes to try again.'
           : 'The page is reloading without its previous JavaScript state.'}

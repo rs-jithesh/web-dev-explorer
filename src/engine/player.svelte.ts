@@ -10,6 +10,7 @@ import type {
 import type { Run } from './server'
 import { handleRequest } from './server'
 import { stepsForRun, type StatusCode } from './composer'
+import { SHOW_PREDICTIONS } from './features'
 
 /**
  * One store for the player and the request composer. Scripted lessons continue
@@ -96,6 +97,9 @@ export class Player {
         this.stepIndex < this.composerSteps.length - 1
       )
     }
+    if (!SHOW_PREDICTIONS) {
+      return this.stepIndex < this.scenario.steps.length - 1
+    }
     return this.locked !== null && this.stepIndex < this.scenario.steps.length - 1
   }
 
@@ -129,7 +133,12 @@ export class Player {
   }
 
   get statusVerdict(): 'correct' | 'wrong' | null {
-    if (!this.isComposer || !this.composerSent || this.composerStatus === null) {
+    if (
+      !SHOW_PREDICTIONS ||
+      !this.isComposer ||
+      !this.composerSent ||
+      this.composerStatus === null
+    ) {
       return null
     }
     if (this.stepIndex !== this.composerSteps.length - 1) return null
@@ -186,7 +195,7 @@ export class Player {
 
   trigger(): 'started' | 'prompt' | 'ignored' {
     if (!this.canTrigger) return 'ignored'
-    if (this.locked !== null) {
+    if (this.locked !== null || !SHOW_PREDICTIONS) {
       this.stepIndex = 0
       return 'started'
     }
@@ -199,7 +208,7 @@ export class Player {
   send(): 'started' | 'prompt' | 'ignored' {
     if (!this.isComposer || this.composerSent) return 'ignored'
 
-    if (this.composerStatus === null) {
+    if (SHOW_PREDICTIONS && this.composerStatus === null) {
       this.composerValidation = 'Choose the status you expect first.'
       return 'prompt'
     }

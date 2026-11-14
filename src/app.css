@@ -200,6 +200,10 @@ h1 {
   gap: 20px;
 }
 
+.lower.single {
+  grid-template-columns: 1fr;
+}
+
 /* Cards */
 
 .card {

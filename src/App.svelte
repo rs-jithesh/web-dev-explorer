@@ -23,6 +23,7 @@
     statusLabel,
     statusSentence,
   } from './engine/composer'
+  import { SHOW_PREDICTIONS } from './engine/features'
   import type { Box } from './engine/types'
 
   const player = new Player(lessons)
@@ -164,9 +165,13 @@
 
   const readyText = $derived(
     isComposer
-      ? 'Compose a request above, choose the status you expect, then press Send.'
+      ? SHOW_PREDICTIONS
+        ? 'Compose a request above, choose the status you expect, then press Send.'
+        : 'Compose a request above, then press Send.'
       : player.isMain
-        ? `Press ${browserAction} to start. When the prediction opens, lock in a guess and the request will run.`
+        ? SHOW_PREDICTIONS
+          ? `Press ${browserAction} to start. When the prediction opens, lock in a guess and the request will run.`
+          : `Press ${browserAction} to start, then use Step to follow the request.`
         : `Press Step to follow this break-it case: ${scenario.label.toLowerCase()}.`,
   )
 
@@ -179,7 +184,11 @@
 
   const resultLive = $derived(
     isComposer && player.statusFinished && player.composerRun
-      ? `Result: ${statusLabel(player.composerActualStatus)}. ${statusSentence(player.composerRun)} ${failureLocation(player.composerRun)} ${player.statusVerdict === 'correct' ? 'Your prediction was correct.' : 'Your prediction was wrong.'}`
+      ? `Result: ${statusLabel(player.composerActualStatus)}. ${statusSentence(player.composerRun)} ${failureLocation(player.composerRun)}${
+          SHOW_PREDICTIONS && player.statusVerdict
+            ? ` ${player.statusVerdict === 'correct' ? 'Your prediction was correct.' : 'Your prediction was wrong.'}`
+            : ''
+        }`
       : '',
   )
 
@@ -265,6 +274,7 @@
             presets={lesson.composer?.presets ?? []}
             actualStatus={player.composerActualStatus}
             finished={player.statusFinished}
+            showPrediction={SHOW_PREDICTIONS}
             onMethod={(method) => player.setComposerMethod(method)}
             onPath={(path) => player.setComposerPath(path)}
             onBody={(body) => player.setComposerBody(body)}
@@ -307,7 +317,11 @@
         />
       </div>
 
-      <div class="lower" bind:this={lowerEl}>
+      <div
+        class="lower"
+        class:single={!isComposer && !SHOW_PREDICTIONS}
+        bind:this={lowerEl}
+      >
         {#if isComposer}
           <ResultPanel
             sent={player.composerSent}
@@ -316,7 +330,7 @@
             guess={player.composerStatus}
             verdict={player.statusVerdict}
           />
-        {:else}
+        {:else if SHOW_PREDICTIONS}
           <PredictionPanel
             lessonId={lesson.id}
             question={lesson.prediction.question}
@@ -347,10 +361,18 @@
           canStep={player.canStep}
           canBack={player.canBack}
           atEnd={player.atEnd}
-          ready={isComposer ? player.composerSent : player.locked !== null}
+          ready={isComposer
+            ? player.composerSent
+            : SHOW_PREDICTIONS
+              ? player.locked !== null
+              : true}
           hint={isComposer
-            ? 'Choose a status and press Send to start.'
-            : 'Step unlocks after you lock in a guess.'}
+            ? SHOW_PREDICTIONS
+              ? 'Choose a status and press Send to start.'
+              : 'Press Send to start.'
+            : SHOW_PREDICTIONS
+              ? 'Step unlocks after you lock in a guess.'
+              : 'Press Add to start.'}
           readyText={readyText}
           onStep={handleStep}
           onBack={handleBack}
@@ -362,7 +384,7 @@
         <BreakItPanel
           scenarios={lesson.breakIts}
           activeId={player.scenarioId}
-          locked={player.locked !== null}
+          locked={SHOW_PREDICTIONS ? player.locked !== null : true}
           onSelect={(id) => player.selectScenario(id)}
           onMain={() => player.selectScenario(null)}
         />

@@ -16,6 +16,7 @@
     presets,
     actualStatus,
     finished,
+    showPrediction,
     onMethod,
     onPath,
     onBody,
@@ -32,6 +33,7 @@
     presets: ComposerPreset[]
     actualStatus: number | 'timeout' | null
     finished: boolean
+    showPrediction: boolean
     onMethod: (method: Method) => void
     onPath: (path: string) => void
     onBody: (body: string) => void
@@ -46,7 +48,10 @@
 <Card title="Request composer" {meta}>
   <div class="card-body">
     <p class="composer-intro">
-      You are the client. Build a request, predict its status, then send it.
+      You are the client.
+      {showPrediction
+        ? 'Build a request, predict its status, then send it.'
+        : 'Build a request, then send it.'}
     </p>
 
     <ComposerFields
@@ -59,14 +64,16 @@
       {onBody}
     />
 
-    <StatusPrediction
-      {status}
-      {sent}
-      {validation}
-      {actualStatus}
-      {finished}
-      {onStatus}
-    />
+    {#if showPrediction}
+      <StatusPrediction
+        {status}
+        {sent}
+        {validation}
+        {actualStatus}
+        {finished}
+        {onStatus}
+      />
+    {/if}
 
     <div class="composer-actions">
       <button
@@ -80,7 +87,9 @@
       <span class="hint">
         {sent
           ? 'Request sent. Use Reset below to try another.'
-          : 'Your prediction is checked after the response.'}
+          : showPrediction
+            ? 'Your prediction is checked after the response.'
+            : 'The request runs when you press Send.'}
       </span>
     </div>
 
