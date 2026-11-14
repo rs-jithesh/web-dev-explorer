@@ -41,6 +41,20 @@ The first deployment can take a minute. The site will be available at `https://<
 
 There is no backend, API call or real database. A small fake server in `src/engine/server.ts` takes a request object and returns a response object, so every status code is produced by the same logic the UI displays.
 
+### Fake server contract
+
+`handleRequest({ method, path, body }, tasks, options)` interprets a real wire request and returns both the response and a trace of how far it got:
+
+- `GET /tasks` → `200` with the task array
+- `POST /tasks` with a valid title → `201` with the new row
+- `POST /tasks` with an empty, missing or non-string title → `400` validation error
+- `POST /tasks` with invalid or empty JSON → `400` parse error
+- unknown path → `404`
+- known path with an unsupported method (for example `DELETE /tasks`) → `405`
+- server off → no response and a `timeout` failure
+
+The trace records `matched`, `methodAllowed`, `parsed`, `failure` and `reached.api/server/database`, so the animation can stop at the layer where the request actually failed. `simulate(requestSpec, tasks, options)` adapts the scripted lesson data onto the same server.
+
 ## Structure
 
 ```
@@ -49,7 +63,7 @@ src/
   app.css                    one plain CSS file for the whole app
   engine/
     types.ts                 lesson, scenario and step shapes
-    server.ts                fake in-memory HTTP server and database writes
+    server.ts                fake HTTP server, response contract and trace
     view.ts                  turns a step plus a server run into card views
     scenarios.ts             shared step scripts for POST, GET and failures
     player.svelte.ts         the single player store

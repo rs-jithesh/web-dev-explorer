@@ -1,6 +1,6 @@
 export type Box = 'browser' | 'api' | 'server' | 'database'
 
-export type Method = 'GET' | 'POST'
+export type Method = 'GET' | 'POST' | 'DELETE'
 
 export type Transport = 'http' | 'db'
 
@@ -32,6 +32,7 @@ export interface RequestSpec {
   method: Method
   path: string
   title?: string
+  body?: string
 }
 
 export interface Step {

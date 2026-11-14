@@ -19,7 +19,13 @@ export interface BrowserView {
   statusLabel: string | null
 }
 
-export type MatchState = 'unknown' | 'matched' | 'missed' | 'offline' | 'blocked'
+export type MatchState =
+  | 'unknown'
+  | 'matched'
+  | 'missed'
+  | 'method_not_allowed'
+  | 'timeout'
+  | 'blocked'
 
 export interface ApiView {
   request: RunRequest | null
@@ -63,10 +69,10 @@ function reached(stage: Stage, target: Stage) {
 }
 
 function errorText(run: Run): string {
-  if (run.error === 'offline') {
-    return 'No response. The server is off or unreachable.'
+  if (run.failure === 'timeout') {
+    return 'Timed out. No response came back.'
   }
-  if (run.error === 'blocked') {
+  if (run.failure === 'blocked') {
     return 'Blocked. A browser cannot open the database directly.'
   }
   if (run.response?.status === 400) {
@@ -75,6 +81,12 @@ function errorText(run: Run): string {
   }
   if (run.response?.status === 404) {
     return '404 Not Found: no route matched this request.'
+  }
+  if (run.response?.status === 405) {
+    return '405 Method Not Allowed: this path does not accept that method.'
+  }
+  if (run.response && run.response.status >= 500) {
+    return `${run.response.status} Server error.`
   }
   return 'The request failed.'
 }
@@ -181,7 +193,7 @@ function apiView(step: Step | null, run: Run): ApiView {
     }
   }
 
-  if (run.error === 'blocked') {
+  if (run.failure === 'blocked') {
     return {
       request: null,
       sent: false,
@@ -196,10 +208,16 @@ function apiView(step: Step | null, run: Run): ApiView {
   const showResponse = reached(step.stage, 'respond')
 
   let match: MatchState = 'unknown'
-  if (run.error === 'offline') {
-    match = showResponse ? 'offline' : 'unknown'
+  if (run.failure === 'timeout') {
+    match = showResponse ? 'timeout' : 'unknown'
   } else if (reached(step.stage, 'route')) {
-    match = run.matched ? 'matched' : 'missed'
+    if (!run.matched) {
+      match = 'missed'
+    } else if (!run.methodAllowed) {
+      match = 'method_not_allowed'
+    } else {
+      match = 'matched'
+    }
   }
 
   return {
@@ -208,31 +226,39 @@ function apiView(step: Step | null, run: Run): ApiView {
     match,
     response: showResponse ? run.response : null,
     error:
-      showResponse && run.error === 'offline'
-        ? 'No response. The server is off.'
+      showResponse && run.failure === 'timeout'
+        ? 'No response. The request timed out.'
         : null,
     note: null,
   }
 }
 
 function serverView(lesson: Lesson, step: Step | null, run: Run): ServerView {
-  const on = run.error !== 'offline' && run.error !== 'blocked'
+  const on = run.failure !== 'timeout' && run.failure !== 'blocked'
   const status =
-    run.error === 'offline' ? 'offline' : run.error === 'blocked' ? 'blocked' : 'on'
+    run.failure === 'timeout'
+      ? 'offline'
+      : run.failure === 'blocked'
+        ? 'blocked'
+        : 'on'
 
   let note = 'Waiting for a request.'
-  if (run.error === 'blocked') {
+  if (run.failure === 'blocked') {
     note = 'Not reached. No HTTP request was made.'
-  } else if (run.error === 'offline') {
+  } else if (run.failure === 'timeout') {
     note = 'The server is off. No code ran.'
   } else if (!step) {
     note = 'The handler is idle.'
   } else if (step.stage === 'click' || step.stage === 'send') {
     note = 'No code has run yet.'
   } else if (step.stage === 'route') {
-    note = run.matched
-      ? `The router chose the handler on line ${step.line ?? 1}.`
-      : 'No handler matched, so no code ran.'
+    if (!run.matched) {
+      note = 'No handler matched, so no code ran.'
+    } else if (!run.methodAllowed) {
+      note = 'The path exists, but no handler accepts this method.'
+    } else {
+      note = `The router chose the handler on line ${step.line ?? 1}.`
+    }
   } else if (step.stage === 'code') {
     note = step.line ? `Line ${step.line} is running.` : 'The handler is running.'
   } else if (step.stage === 'db') {
@@ -257,7 +283,7 @@ function serverView(lesson: Lesson, step: Step | null, run: Run): ServerView {
 }
 
 function databaseView(lesson: Lesson, step: Step | null, run: Run): DatabaseView {
-  const locked = run.error === 'blocked'
+  const locked = run.failure === 'blocked'
   const showedDatabase = step ? reached(step.stage, 'db') : false
 
   return {

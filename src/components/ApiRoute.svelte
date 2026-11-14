@@ -9,14 +9,9 @@
     201: 'Created',
     400: 'Bad Request',
     404: 'Not Found',
+    405: 'Method Not Allowed',
     500: 'Server Error',
   }
-
-  let body = $derived(
-    view.request?.method === 'POST'
-      ? `{ "title": ${JSON.stringify(view.request.title ?? '')} }`
-      : '',
-  )
 </script>
 
 <Card index="2" title="API route" meta="HTTP" {active}>
@@ -26,8 +21,11 @@
       {#if view.request}
         <div class="request mono">
           <b>{view.request.method} {view.request.path}</b><br />
-          {#if view.request.method === 'POST'}
-            Content-Type: application/json<br /><br />{body}
+          {#if view.request.body !== null}
+            Content-Type: application/json
+            <span class="request-body" class:muted={view.request.body.trim() === ''}>
+              {view.request.body.trim() === '' ? '(empty body)' : view.request.body}
+            </span>
           {:else}
             Accept: application/json<br /><br /><span class="muted">No body.</span>
           {/if}
@@ -43,8 +41,12 @@
         <p class="note match-ok">Route matched.</p>
       {:else if view.match === 'missed'}
         <p class="note match-bad">No route matched.</p>
-      {:else if view.match === 'offline'}
-        <p class="note match-bad">The request never reached the router.</p>
+      {:else if view.match === 'method_not_allowed'}
+        <p class="note match-bad">
+          Path exists, but this method is not allowed.
+        </p>
+      {:else if view.match === 'timeout'}
+        <p class="note match-bad">Timed out before a response.</p>
       {:else if view.match === 'blocked'}
         <p class="note match-bad">No HTTP request was made.</p>
       {/if}

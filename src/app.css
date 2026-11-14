@@ -495,6 +495,13 @@ h1 {
   font-weight: 500;
 }
 
+.request-body {
+  display: block;
+  margin-top: 8px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .response {
   display: flex;
   flex-direction: column;
@@ -559,7 +566,12 @@ h1 {
 }
 
 .code.is-off {
-  opacity: 0.45;
+  background: #f1f0eb;
+}
+
+.code.is-off .code-text,
+.code.is-off .code-num {
+  color: var(--muted);
 }
 
 .code-line {
@@ -660,7 +672,12 @@ h1 {
 }
 
 .db-table.is-locked {
-  opacity: 0.45;
+  background: #f6f5f1;
+}
+
+.db-table.is-locked td,
+.db-table.is-locked th {
+  color: var(--body);
 }
 
 .db-empty {
