@@ -133,7 +133,8 @@
     if (!run) return
 
     if (depth === 1) {
-      stepIndex = next === 3 ? 2 : 0
+      // The designed story opens at the validation/save step.
+      stepIndex = 2
     }
     depth = next
   }
