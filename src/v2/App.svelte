@@ -189,10 +189,6 @@
   })
 </script>
 
-<svelte:head>
-  <title>Add a task · Web Dev Explorer</title>
-</svelte:head>
-
 <div class="v2-shell">
   <header class="v2-topbar">
     <div class="v2-brand">
