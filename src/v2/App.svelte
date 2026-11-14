@@ -133,8 +133,8 @@
     if (!run) return
 
     if (depth === 1) {
-      // The designed story opens at the validation/save step.
-      stepIndex = 2
+      // Enter at the beginning; the learner can Step toward the save step.
+      stepIndex = 0
     }
     depth = next
   }
@@ -190,7 +190,7 @@
 </script>
 
 <svelte:head>
-  <title>Add a task · Web Flow Explorer</title>
+  <title>Add a task · Web Dev Explorer</title>
 </svelte:head>
 
 <div class="v2-shell">

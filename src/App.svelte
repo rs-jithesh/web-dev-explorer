@@ -275,7 +275,7 @@
 </script>
 
 <svelte:head>
-  <title>{lesson.title} · Web Flow Explorer</title>
+  <title>{lesson.title} · Web Dev Explorer</title>
 </svelte:head>
 
 <div class="shell">
