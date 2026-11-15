@@ -2,6 +2,7 @@
   import { onMount, tick } from 'svelte'
   import { handleRequest, type Run } from '../engine/server'
   import type { Task } from '../engine/types'
+  import ModeSwitch from '../ModeSwitch.svelte'
   import {
     CHAPTER_CHOICES,
     PAYLOAD_CASES,
@@ -193,10 +194,6 @@
   }
 
   function openSandbox() {
-    if (!sandboxUnlocked) {
-      notice = 'Finish all chapters first.'
-      return
-    }
     onSandbox()
   }
 
@@ -652,31 +649,12 @@
       <span class="story-brand-name">Web Flow Explorer</span>
     </div>
 
-    <div class="story-mode" aria-label="Story Mode or Sandbox">
-      <button
-        class="story-mode-btn is-active"
-        type="button"
-        aria-pressed="true"
-        onclick={openPath}
-      >
-        Story Mode
-      </button>
-      <button
-        class="story-mode-btn"
-        class:is-locked={!sandboxUnlocked}
-        type="button"
-        aria-pressed="false"
-        aria-disabled={!sandboxUnlocked}
-        onclick={openSandbox}
-      >
-        Sandbox
-        {#if !sandboxUnlocked}
-          <svg class="story-lock" width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
-            <rect x="2.5" y="4.5" width="5" height="4" rx="1"></rect>
-            <path d="M3.5 4.5V3.2a1.5 1.5 0 0 1 3 0v1.3"></path>
-          </svg>
-        {/if}
-      </button>
+    <div class="story-mode-wrap">
+      <ModeSwitch
+        mode="story"
+        onStory={openPath}
+        onSandbox={openSandbox}
+      />
     </div>
 
     <div class="story-top-right">
@@ -777,25 +755,7 @@
           </div>
         </section>
 
-        <aside class="story-sandbox-card">
-          <h2>Sandbox</h2>
-          <p>{sandboxUnlocked ? 'Everything is open.' : 'Unlocks after chapter 6.'}</p>
-          {#if sandboxUnlocked}
-            <div class="story-sandbox-list">
-              <div class="story-sandbox-item"><span class="story-check">✓</span>All cases</div>
-              <div class="story-sandbox-item"><span class="story-check">✓</span>All switches</div>
-              <div class="story-sandbox-item"><span class="story-check">✓</span>Three depths</div>
-            </div>
-            <button class="story-btn story-btn-primary story-wide" type="button" onclick={openSandbox}>Open</button>
-          {:else}
-            <div class="story-sandbox-list">
-              <div class="story-sandbox-item"><span class="story-lock-small">●</span>Scenarios</div>
-              <div class="story-sandbox-item"><span class="story-lock-small">●</span>Switches</div>
-              <div class="story-sandbox-item"><span class="story-lock-small">●</span>Depths</div>
-            </div>
-            <button class="story-btn story-wide" type="button" disabled>Locked</button>
-          {/if}
-        </aside>
+
       </div>
     </main>
   {:else}
@@ -973,7 +933,7 @@
         <aside class="story-side">
           {#if phase === 'done'}
             <section class="story-unlock-card">
-              <h2>{sandboxUnlocked ? 'Sandbox open' : 'Unlocked'}</h2>
+              <h2>{sandboxUnlocked ? 'All chapters complete' : 'Unlocked'}</h2>
               <div class="story-unlock-list">
                 {#if sandboxUnlocked}
                   <div class="story-unlock-item"><span class="story-check">✓</span><span><strong>All cases</strong></span></div>

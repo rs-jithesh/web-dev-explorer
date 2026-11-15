@@ -23,6 +23,7 @@
   import { evidenceFor } from './evidence'
   import { MENTAL_QUESTIONS, type MentalQuestion } from './questions'
   import { v2Prompt } from './tutor'
+  import ModeSwitch from '../ModeSwitch.svelte'
   import EvidenceCard from './EvidenceCard.svelte'
   import QuestionDrawer from './QuestionDrawer.svelte'
   import StepRail from './StepRail.svelte'
@@ -548,25 +549,15 @@
   <h1 class="v2-sr-only">Web Flow Explorer: {lesson.title}</h1>
 
   <header class="v2-topbar">
-    <div class="v2-brand">
-      <span class="v2-logo" aria-hidden="true">W</span>
-      <span class="v2-brand-name">{APP_COPY.brand}</span>
-      <label class="v2-lesson-label">
-        <span class="v2-sr-only">Lesson</span>
-        <select
-          class="v2-lesson-select"
-          value={lessonId}
-          onchange={(event) =>
-            resetForLesson(event.currentTarget.value as ExplorerLessonId)}
-        >
-          {#each EXPLORER_LESSONS as item (item.id)}
-            <option value={item.id}>{item.navLabel}</option>
-          {/each}
-        </select>
-      </label>
-    </div>
+    <div class="v2-topbar-main">
+      <div class="v2-brand">
+        <span class="v2-logo" aria-hidden="true">W</span>
+        <span class="v2-brand-name">{APP_COPY.brand}</span>
+      </div>
 
-    <nav class="v2-depth" aria-label="Depth">
+      <ModeSwitch mode="sandbox" onStory={onStory} onSandbox={() => {}} />
+
+      <nav class="v2-depth" aria-label="Depth">
       {#each DEPTH_OPTIONS as option (option.level)}
         <button
           class="v2-depth-btn"
@@ -580,18 +571,6 @@
         </button>
       {/each}
     </nav>
-
-    <button
-      class="v2-story-btn"
-      type="button"
-      onclick={onStory}
-    >
-      <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M2.5 3.5h9v7h-9z"></path>
-        <path d="M4.5 5.5h5M4.5 7.5h3"></path>
-      </svg>
-      Story Mode
-    </button>
 
     <button
       class="v2-mental-btn"
@@ -610,6 +589,23 @@
     </button>
 
     <VersionToggle {view} onChange={onChangeView} />
+    </div>
+
+    <div class="v2-lesson-row">
+      <label class="v2-lesson-label">
+        <span class="v2-sr-only">Lesson</span>
+        <select
+          class="v2-lesson-select"
+          value={lessonId}
+          onchange={(event) =>
+            resetForLesson(event.currentTarget.value as ExplorerLessonId)}
+        >
+          {#each EXPLORER_LESSONS as item (item.id)}
+            <option value={item.id}>{item.navLabel}</option>
+          {/each}
+        </select>
+      </label>
+    </div>
   </header>
 
   <main class="v2-main">

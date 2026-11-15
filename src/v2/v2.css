@@ -26,11 +26,19 @@
 
 .v2-topbar {
   display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--v2-border);
+}
+
+.v2-topbar-main {
+  display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--v2-border);
+  width: 100%;
 }
 
 .v2-brand {
@@ -105,33 +113,6 @@
 .v2-depth-btn.is-active {
   background: var(--v2-ink);
   color: #fff;
-}
-
-.v2-story-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  min-height: 30px;
-  padding: 0 9px;
-  border: 1px solid var(--v2-border);
-  border-radius: 7px;
-  background: #fff;
-  color: var(--v2-body);
-  font-family: inherit;
-  font-size: 10px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.v2-story-btn:hover {
-  border-color: var(--v2-blue-line);
-  background: var(--v2-blue-soft);
-  color: var(--v2-blue);
-}
-
-.v2-story-btn:focus-visible {
-  outline: 2px solid var(--v2-blue);
-  outline-offset: 2px;
 }
 
 .v2-mental-btn {
@@ -1281,12 +1262,6 @@
     font-size: 10px;
   }
 
-  .v2-story-btn {
-    order: 2;
-    padding: 0 7px;
-    font-size: 9px;
-  }
-
   .v2-depth {
     order: 3;
     flex: 1 1 100%;
@@ -1377,28 +1352,38 @@
   }
 }
 
+.v2-lesson-row {
+  display: flex;
+  align-items: center;
+}
+
 .v2-lesson-label {
   display: inline-flex;
   min-width: 0;
 }
 
 .v2-lesson-select {
-  max-width: 220px;
-  min-height: 28px;
-  padding: 3px 22px 3px 8px;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--v2-body);
+  width: 260px;
+  max-width: 100%;
+  min-height: 36px;
+  padding: 0 30px 0 11px;
+  border: 1px solid var(--v2-border);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--v2-ink);
   font-family: var(--sans, 'Inter', system-ui, sans-serif);
   font-size: 12px;
+  box-shadow: 0 1px 2px rgb(27 31 36 / 4%);
 }
 
-.v2-lesson-select:hover,
+.v2-lesson-select:hover {
+  border-color: #bdbab0;
+}
+
 .v2-lesson-select:focus {
-  border-color: var(--v2-border);
-  background: #f8f7f4;
-  color: var(--v2-ink);
+  border-color: var(--v2-blue);
+  outline: 2px solid rgb(29 78 216 / 14%);
+  outline-offset: 0;
 }
 
 .v2-case-select-wrap {
@@ -1534,8 +1519,9 @@
   }
 
   .v2-lesson-select {
-    max-width: 165px;
-    font-size: 11px;
+    width: min(260px, 100%);
+    max-width: none;
+    font-size: 12px;
   }
 
   .v2-case-select {
