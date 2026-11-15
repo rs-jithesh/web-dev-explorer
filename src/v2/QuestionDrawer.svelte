@@ -31,7 +31,6 @@
   let liveMessage = $state('')
   let panelEl: HTMLDivElement | undefined = $state()
   let closeButton: HTMLButtonElement | undefined = $state()
-  let setHeading: HTMLHeadingElement | undefined = $state()
   let questionHeading: HTMLHeadingElement | undefined = $state()
 
   const groups = $derived(
@@ -99,7 +98,9 @@
     view = 'set'
     activeId = null
     liveMessage = 'Question set.'
-    tick().then(() => setHeading?.focus())
+    tick().then(() => {
+      panelEl?.querySelector<HTMLButtonElement>('.v2-mm-row')?.focus()
+    })
   }
 
   function choose(optionId: string) {
@@ -222,7 +223,7 @@
 
       <div class="v2-mm-body">
         {#if view === 'set'}
-          <h3 class="v2-mm-sr" bind:this={setHeading} tabindex="-1">
+          <h3 class="v2-mm-sr">
             Question set
           </h3>
           <p class="v2-mm-intro">
@@ -403,8 +404,6 @@
             <div
               class="v2-mm-feedback"
               class:is-wrong={!selectedIsCorrect}
-              role="status"
-              aria-live="polite"
             >
               <span class="v2-mm-feedback-mark" aria-hidden="true">
                 {selectedIsCorrect ? '✓' : '!'}
