@@ -198,6 +198,7 @@ test('Explorer exposes all five lessons and keeps failure cases', () => {
   assert.ok(add.cases.some((item) => item.id === 'empty'))
   assert.ok(add.cases.some((item) => item.id === 'invalid-json'))
   assert.ok(add.cases.some((item) => item.id === 'server-off'))
+  assert.ok(add.cases.some((item) => item.id === 'database-off'))
   assert.ok(add.cases.some((item) => item.id === 'direct-db'))
 })
 

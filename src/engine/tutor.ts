@@ -133,6 +133,7 @@ const STOP_AREAS: Record<Exclude<Failure, null>, StopArea> = {
   invalid_json: 'server',
   validation: 'server',
   server_error: 'server',
+  database_error: 'database',
 }
 
 const STATUS_LABELS = wording.status as Record<string, string>

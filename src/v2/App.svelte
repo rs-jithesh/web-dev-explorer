@@ -35,9 +35,11 @@
   let {
     view,
     onChangeView,
+    onStory,
   }: {
     view: ViewName
     onChangeView: (view: ViewName) => void
+    onStory: () => void
   } = $props()
 
   const STORAGE_KEY = 'wfe:explorer'
@@ -149,6 +151,7 @@
       before,
       {
         serverOn: item.serverOn ?? true,
+        databaseOn: item.databaseOn,
         transport: item.transport,
       },
     )
@@ -577,6 +580,18 @@
         </button>
       {/each}
     </nav>
+
+    <button
+      class="v2-story-btn"
+      type="button"
+      onclick={onStory}
+    >
+      <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M2.5 3.5h9v7h-9z"></path>
+        <path d="M4.5 5.5h5M4.5 7.5h3"></path>
+      </svg>
+      Story Mode
+    </button>
 
     <button
       class="v2-mental-btn"

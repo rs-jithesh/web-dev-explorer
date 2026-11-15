@@ -260,6 +260,7 @@ function genericStatusText(run: Run): string {
     404: 'Not Found',
     405: 'Method Not Allowed',
     500: 'Server Error',
+    503: 'Service Unavailable',
   }
   return status ? `${status} ${labels[status] ?? ''}`.trim() : 'No response'
 }

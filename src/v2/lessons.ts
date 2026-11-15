@@ -27,6 +27,7 @@ export interface ExplorerCase {
     body: string | null
   }
   serverOn?: boolean
+  databaseOn?: boolean
   transport?: Transport
 }
 
@@ -106,6 +107,16 @@ const addCases: ExplorerCase[] = [
     serverOn: false,
   },
   {
+    id: 'database-off',
+    label: 'Database off',
+    request: {
+      method: 'POST',
+      path: '/tasks',
+      body: JSON.stringify({ title: DEFAULT_TITLE }),
+    },
+    databaseOn: false,
+  },
+  {
     id: 'direct-db',
     label: 'Try the database directly',
     request: {
@@ -138,6 +149,12 @@ const loadCases: ExplorerCase[] = [
     label: 'Server off',
     request: { method: 'GET', path: '/tasks', body: null },
     serverOn: false,
+  },
+  {
+    id: 'database-off',
+    label: 'Database off',
+    request: { method: 'GET', path: '/tasks', body: null },
+    databaseOn: false,
   },
 ]
 
@@ -183,6 +200,16 @@ const failCases: ExplorerCase[] = [
       body: JSON.stringify({ title: DEFAULT_TITLE }),
     },
     serverOn: false,
+  },
+  {
+    id: 'database-off',
+    label: 'Database off',
+    request: {
+      method: 'POST',
+      path: '/tasks',
+      body: JSON.stringify({ title: DEFAULT_TITLE }),
+    },
+    databaseOn: false,
   },
 ]
 
@@ -498,6 +525,56 @@ function failureStory(
         box: 'browser',
         stage: 'done',
         text: `The server returns ${statusText}. The browser shows the error.`,
+      },
+    ]
+  }
+
+  if (run.failure === 'database_error') {
+    return [
+      {
+        id: 'dbdown-send',
+        short: 'Browser sends request',
+        actor: 'Browser',
+        tone: 'browser',
+        box: 'browser',
+        stage: 'send',
+        text: `The browser sends ${method} ${path} and waits for a response.`,
+      },
+      {
+        id: 'dbdown-route',
+        short: 'Router matches',
+        actor: 'Server',
+        tone: 'server',
+        box: 'api',
+        stage: 'route',
+        text: `${method} ${path} matches a handler, so the request enters the server.`,
+      },
+      {
+        id: 'dbdown-server',
+        short: 'Server code runs',
+        actor: 'Server',
+        tone: 'server',
+        box: 'server',
+        stage: 'code',
+        text: 'The handler parses the request and asks the database to read or write.',
+      },
+      {
+        id: 'dbdown-db',
+        short: 'Database unavailable',
+        actor: 'Database',
+        tone: 'database',
+        box: 'database',
+        stage: 'blocked',
+        text: 'The database cannot be reached. No row is read or written.',
+      },
+      {
+        id: 'dbdown-response',
+        short: 'Browser shows the error',
+        actor: 'Browser',
+        tone: 'browser',
+        box: 'browser',
+        stage: 'done',
+        text: `The server returns ${statusText}. The page stays up and shows a service error.`,
       },
     ]
   }

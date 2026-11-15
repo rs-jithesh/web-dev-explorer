@@ -19,6 +19,7 @@ export type Failure =
   | 'invalid_json'
   | 'validation'
   | 'server_error'
+  | 'database_error'
   | null
 
 export interface Reached {
@@ -42,6 +43,7 @@ export interface Run {
 
 export interface RunOptions {
   serverOn?: boolean
+  databaseOn?: boolean
   transport?: Transport
 }
 
@@ -145,6 +147,20 @@ export function handleRequest(
   }
 
   if (request.method === 'GET') {
+    if (options.databaseOn === false) {
+      return makeRun(request, tasks, {
+        matched: true,
+        methodAllowed: true,
+        parsed: true,
+        response: {
+          status: 503,
+          body: { error: 'Database unavailable' },
+        },
+        failure: 'database_error',
+        reached: handlerReached,
+      })
+    }
+
     return makeRun(request, tasks, {
       matched: true,
       methodAllowed: true,
@@ -182,6 +198,20 @@ export function handleRequest(
         parsed: true,
         response: { status: 400, body: { error: 'title is required' } },
         failure: 'validation',
+        reached: handlerReached,
+      })
+    }
+
+    if (options.databaseOn === false) {
+      return makeRun(request, tasks, {
+        matched: true,
+        methodAllowed: true,
+        parsed: true,
+        response: {
+          status: 503,
+          body: { error: 'Database unavailable' },
+        },
+        failure: 'database_error',
         reached: handlerReached,
       })
     }
