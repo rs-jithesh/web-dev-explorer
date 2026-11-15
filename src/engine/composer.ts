@@ -90,6 +90,8 @@ export function statusLabel(status: number | 'timeout' | null): string {
       return '405 Method Not Allowed'
     case 500:
       return '500 Server Error'
+    case 503:
+      return '503 Service Unavailable'
     default:
       return status === null ? 'No response' : `${status}`
   }
@@ -115,6 +117,8 @@ export function statusSentence(run: Run): string {
       return 'The path exists, but it does not accept that method.'
     case 500:
       return 'The server hit an error it did not handle.'
+    case 503:
+      return 'The server could not reach the database.'
     default:
       return 'The request completed.'
   }
@@ -135,6 +139,8 @@ export function failureLocation(run: Run): string {
       return 'Stopped in the browser; no HTTP request was made.'
     case 'server_error':
       return 'Stopped in the server code.'
+    case 'database_error':
+      return 'Stopped at the database connection.'
     case null:
       return run.request?.method === 'GET'
         ? 'Reached the database and returned the list through the API.'
