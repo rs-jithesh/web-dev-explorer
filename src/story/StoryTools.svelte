@@ -32,7 +32,6 @@
 </script>
 
 <footer class="story-tools" aria-label="Story controls">
-  <p class="story-eyebrow story-tools-label">TOOLS</p>
   <div class="story-tools-list">
     {#if available.refresh}
       <button class="story-tool" type="button" onclick={onRefresh}>Refresh</button>
@@ -87,6 +86,6 @@
   </div>
   <button class="story-reset" type="button" onclick={onReset}>
     {@html reset}
-    Reset chapter
+    Reset
   </button>
 </footer>

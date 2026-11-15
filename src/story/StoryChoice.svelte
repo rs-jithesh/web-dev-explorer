@@ -3,7 +3,6 @@
 
   let {
     prompt,
-    lead,
     options,
     selectedId,
     checked,
@@ -17,7 +16,6 @@
     continueLabel = 'Continue',
   }: {
     prompt: string
-    lead: string
     options: StoryChoiceOption[]
     selectedId: string | null
     checked: boolean
@@ -33,11 +31,9 @@
 </script>
 
 <section class="story-choice" aria-labelledby="story-choice-title">
-  <p class="story-eyebrow">MAKE THE NEXT MOVE</p>
   <h2 id="story-choice-title">{prompt}</h2>
-  <p class="story-choice-lead">{lead}</p>
 
-  <div class="story-choice-list" role="radiogroup" aria-label="Answer choices">
+  <div class="story-choice-list" role="radiogroup" aria-label="Choices">
     {#each options as option (option.id)}
       <label
         class="story-choice-option"
@@ -93,7 +89,7 @@
         disabled={!selectedId}
         onclick={onCheck}
       >
-        Check answer
+        Check
       </button>
     {:else if isCorrect}
       <button class="story-btn story-btn-primary" type="button" onclick={onContinue}>

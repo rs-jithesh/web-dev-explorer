@@ -76,108 +76,78 @@ export const STORY_CHAPTERS: StoryChapter[] = [
     number: 1,
     title: 'Adding a task',
     problem: 'Your list is empty.',
-    narrative:
-      'You are building your own to-do app. Add one thing you actually need to do, then follow your text across the stack.',
+    narrative: 'Add one task. Follow your text.',
     quote:
       'The same value should appear in the form, the request, and the database row.',
-    actionLabel: 'Send the request',
-    steps: [
-      'Type the task you need to do.',
-      'Send it and follow the request.',
-      'Choose which layer receives it next.',
-    ],
+    actionLabel: 'Add',
+    steps: ['Type a task', 'Send it', 'Pick the next layer'],
     unlockTitle: 'Behind the scenes',
-    unlockDetail: 'See the server code and the request that just ran.',
+    unlockDetail: 'View the request.',
   },
   {
     id: 'fetch',
     number: 2,
     title: 'Fetching all tasks',
-    problem: 'The page does not already hold the list.',
-    narrative:
-      'Reload the list. The browser has to ask the server for the rows before it can render them.',
+    problem: 'The page has no list.',
+    narrative: 'Reload. The browser asks for the rows.',
     quote:
       'A GET is a question. The response is the answer, and the browser waits for it.',
-    actionLabel: 'Reload the list',
-    steps: [
-      'Clear the page’s copy of the list.',
-      'Ask GET /tasks for the rows.',
-      'Choose what the browser just received.',
-    ],
+    actionLabel: 'Reload',
+    steps: ['Clear the list', 'Ask GET /tasks', 'Pick what came back'],
     unlockTitle: 'Under the hood',
-    unlockDetail: 'Open the raw request and response for this fetch.',
+    unlockDetail: 'View request and response.',
   },
   {
     id: 'refresh',
     number: 3,
     title: 'The refresh test',
-    problem: 'A refresh clears the page.',
-    narrative:
-      'Choose where the task should live, then refresh the page. The result tells you what that storage actually keeps.',
+    problem: 'Refresh clears the page.',
+    narrative: 'Pick storage. Refresh. See what stays.',
     quote:
       'Memory is fast but temporary. A database is slower but still there tomorrow.',
-    actionLabel: 'Refresh the page',
-    steps: [
-      'Choose where the task lives.',
-      'Refresh the page.',
-      'See what the browser can rebuild.',
-    ],
+    actionLabel: 'Refresh',
+    steps: ['Pick storage', 'Refresh', 'See what stays'],
     unlockTitle: 'Storage choice',
-    unlockDetail: 'Choose memory, session, local, or the database in the action area.',
+    unlockDetail: 'Pick storage.',
   },
   {
     id: 'payload',
     number: 4,
     title: 'Wrong payload',
-    problem: 'Bad input can arrive at the door.',
-    narrative:
-      'Send a broken request and watch the server push back. The important part is where it stops.',
+    problem: 'Bad input reaches the server.',
+    narrative: 'Send a bad request. See where it stops.',
     quote:
       'A bad value is not a bad URL. The router and the handler are different checkpoints.',
-    actionLabel: 'Send the bad request',
-    steps: [
-      'Pick a broken request.',
-      'Send it and read the status.',
-      'Choose the layer that stopped it.',
-    ],
+    actionLabel: 'Send',
+    steps: ['Pick a request', 'Send', 'Pick the stop'],
     unlockTitle: 'Break-it is part of the path',
-    unlockDetail: 'Try a missing route and a wrong method from the same screen.',
+    unlockDetail: 'Try a bad route or method.',
   },
   {
     id: 'server',
     number: 5,
     title: 'The server goes down',
-    problem: 'The request has nowhere to land.',
-    narrative:
-      'Flip the server switch and send another request. The page should stay up even when the request fails.',
+    problem: 'The request has nowhere to go.',
+    narrative: 'Turn the server off. The page stays up.',
     quote:
       'A failed request is not the same thing as a broken page.',
-    actionLabel: 'Send while the server is off',
-    steps: [
-      'Open Tools and find the server switch.',
-      'Turn the server off.',
-      'Send a request and watch it fail.',
-    ],
+    actionLabel: 'Send',
+    steps: ['Find the switch', 'Turn it off', 'Send and watch'],
     unlockTitle: 'Server switch',
-    unlockDetail: 'The server switch is now part of your controls.',
+    unlockDetail: 'Server control.',
   },
   {
     id: 'database',
     number: 6,
     title: 'The database disconnects',
-    problem: 'The server is alive, but its storage is not.',
-    narrative:
-      'Flip the database switch and send a valid task. The server runs, then reports that it cannot reach the database.',
+    problem: 'The server cannot reach storage.',
+    narrative: 'Turn the database off. The server cannot save.',
     quote:
       'Three separate things can fail: the browser, the server, and the database.',
-    actionLabel: 'Send while the database is off',
-    steps: [
-      'Open Tools and find the database switch.',
-      'Turn the database off.',
-      'Send a valid task and read the error.',
-    ],
+    actionLabel: 'Send',
+    steps: ['Find the switch', 'Turn it off', 'Send and read'],
     unlockTitle: 'Database switch',
-    unlockDetail: 'The database switch is open, and the sandbox is unlocked.',
+    unlockDetail: 'Sandbox unlocked.',
   },
 ]
 
@@ -188,7 +158,7 @@ export const STORAGE_MODES: StorageMode[] = [
     short: 'Memory',
     survivesRefresh: false,
     serverCanRead: false,
-    result: 'The refresh cleared it. Memory belongs to this page instance only.',
+    result: 'Refresh cleared it.',
   },
   {
     id: 'session',
@@ -196,7 +166,7 @@ export const STORAGE_MODES: StorageMode[] = [
     short: 'Session',
     survivesRefresh: true,
     serverCanRead: false,
-    result: 'It survived this tab’s refresh, but another tab and the server cannot see it.',
+    result: 'Survived this tab only.',
   },
   {
     id: 'local',
@@ -204,7 +174,7 @@ export const STORAGE_MODES: StorageMode[] = [
     short: 'Local',
     survivesRefresh: true,
     serverCanRead: false,
-    result: 'It survived this browser’s refresh, but the server did not write it.',
+    result: 'Survived this browser only.',
   },
   {
     id: 'database',
@@ -212,7 +182,7 @@ export const STORAGE_MODES: StorageMode[] = [
     short: 'Database',
     survivesRefresh: true,
     serverCanRead: true,
-    result: 'It survived. The server can read it again through GET /tasks.',
+    result: 'Survived. The server can read it.',
   },
 ]
 
@@ -271,134 +241,124 @@ export const PAYLOAD_CASES: PayloadCase[] = [
 
 export const CHAPTER_CHOICES: Partial<Record<ChapterId, StoryChoiceData>> = {
   add: {
-    prompt: 'Where does your request go next?',
+    prompt: 'Where does the request go?',
     lead: 'Use the method and path on the wire. Pick the layer that handles this operation.',
     options: [
       {
         id: 'server',
-        label: 'The server',
-        detail: 'The router sends POST /tasks to a handler.',
+        label: 'Server',
+        detail: 'Owns POST /tasks.',
       },
       {
         id: 'database',
-        label: 'The database',
-        detail: 'It can find the row by its title.',
+        label: 'Database',
+        detail: 'Behind the server.',
       },
       {
         id: 'memory',
-        label: 'The browser memory',
-        detail: 'It can keep the task on the page.',
+        label: 'Memory',
+        detail: 'Only this page.',
       },
     ],
     correctId: 'server',
-    correctNote:
-      'The server owns POST /tasks. Its handler checks the title before the database is touched.',
-    wrongNote:
-      'The database is behind the server, and this request has not crossed that boundary yet.',
+    correctNote: 'The server owns POST /tasks.',
+    wrongNote: 'The database is behind the server.',
   },
   fetch: {
-    prompt: 'What did the browser just ask for?',
+    prompt: 'What came back?',
     lead: 'GET has no body. Look at the request and the rows that came back.',
     options: [
       {
         id: 'rows',
-        label: 'The current rows',
-        detail: 'The server returns the list the database stored.',
+        label: 'Rows',
+        detail: 'Rows from the database.',
       },
       {
         id: 'new-row',
-        label: 'A new task',
-        detail: 'The browser is trying to write another row.',
+        label: 'New task',
+        detail: 'A write, not a read.',
       },
       {
         id: 'connection',
-        label: 'A database connection',
-        detail: 'The browser opens the database directly.',
+        label: 'DB connection',
+        detail: 'No direct connection.',
       },
     ],
     correctId: 'rows',
-    correctNote:
-      'GET /tasks asks for the stored rows. The server reads them and sends them back.',
-    wrongNote:
-      'GET reads data. The browser never opens the database or writes a row.',
+    correctNote: 'GET returns the stored rows.',
+    wrongNote: 'GET reads. It does not write.',
   },
   payload: {
-    prompt: 'Which layer stopped this request?',
+    prompt: 'Where did it stop?',
     lead: 'Look at the status and the layer that owns this check.',
     options: [
       {
         id: 'router',
-        label: 'The router',
-        detail: 'The method and path did not match a handler.',
+        label: 'Router',
+        detail: 'No route matched.',
       },
       {
         id: 'server',
-        label: 'The server handler',
-        detail: 'The handler received the request and rejected the payload.',
+        label: 'Server',
+        detail: 'The handler rejected it.',
       },
       {
         id: 'database',
-        label: 'The database',
-        detail: 'The table rejected the row before it was stored.',
+        label: 'Database',
+        detail: 'It never got there.',
       },
     ],
     correctId: 'server',
-    correctNote:
-      'The route matched, so the server handler rejected the bad payload before the database call.',
-    wrongNote:
-      'Look at the status and the request. A bad value is not the same thing as a bad URL.',
+    correctNote: 'The server rejected the payload.',
+    wrongNote: 'Check the status and the request.',
   },
   server: {
-    prompt: 'What happened to this request?',
+    prompt: 'What happened?',
     lead: 'The page is still here. Look at the request and the missing response.',
     options: [
       {
         id: 'no-response',
-        label: 'No response came back',
-        detail: 'The request never reached a running server.',
+        label: 'No response',
+        detail: 'Server was off.',
       },
       {
         id: 'database',
-        label: 'The database rejected it',
-        detail: 'The database was down, so the row was refused.',
+        label: 'Database',
+        detail: 'Database untouched.',
       },
       {
         id: 'page',
-        label: 'The page crashed',
-        detail: 'The failed request took the browser page with it.',
+        label: 'Page crashed',
+        detail: 'Page stayed up.',
       },
     ],
     correctId: 'no-response',
-    correctNote:
-      'The server was off, so no response came back. The page stayed up and the database was never reached.',
-    wrongNote:
-      'The failure is at the connection step, before any database call.',
+    correctNote: 'No response. The page stayed up.',
+    wrongNote: 'The connection failed first.',
   },
   database: {
-    prompt: 'Which layer failed?',
+    prompt: 'What failed?',
     lead: 'The server answered. Look at the status and the protected page.',
     options: [
       {
         id: 'database',
-        label: 'The database',
-        detail: 'The server ran, but could not read or write its storage.',
+        label: 'Database',
+        detail: 'Storage unavailable.',
       },
       {
         id: 'browser',
-        label: 'The browser',
-        detail: 'The page sent a malformed request.',
+        label: 'Browser',
+        detail: 'Request was valid.',
       },
       {
         id: 'router',
-        label: 'The router',
-        detail: 'No handler matched this method and path.',
+        label: 'Router',
+        detail: 'Route matched.',
       },
     ],
     correctId: 'database',
-    correctNote:
-      'The router matched and the server ran. The database was unavailable, so it returned 503 and wrote nothing.',
-    wrongNote:
-      'The request shape was valid and the handler ran. The failure is behind the server.',
+    correctNote: 'The server ran; the database was down.',
+    wrongNote: 'The request and handler were fine.',
   },
 }
 

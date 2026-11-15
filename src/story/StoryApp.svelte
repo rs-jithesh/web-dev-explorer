@@ -80,47 +80,21 @@
   )
   const primaryLabel = $derived.by(() => {
     if (current === 'server') {
-      return serverOn ? 'Turn the server off' : 'Send while the server is off'
+      return serverOn ? 'Turn off server' : 'Send request'
     }
     if (current === 'database') {
-      return databaseOn
-        ? 'Turn the database off'
-        : 'Send while the database is off'
+      return databaseOn ? 'Turn off database' : 'Send request'
     }
     return chapter.actionLabel
   })
   const appError = $derived.by(() => {
     if (current === 'server' && run?.failure === 'timeout') {
-      return 'No response. The page is still here — only the request failed.'
+      return 'No response.'
     }
     if (current === 'database' && run?.failure === 'database_error') {
-      return 'The database is unavailable. The server returned 503.'
+      return 'Database unavailable (503).'
     }
     return ''
-  })
-  const appNote = $derived.by(() => {
-    if (current === 'add') return 'Your text will stay visible at every stop.'
-    if (current === 'fetch') {
-      return tasks.length > 0
-        ? 'The list was rebuilt from the response.'
-        : 'The page has not asked the server for the list yet.'
-    }
-    if (current === 'refresh') {
-      return refreshed
-        ? 'The page has reloaded. The result is below.'
-        : 'Choose a storage, then refresh the page.'
-    }
-    if (current === 'payload') {
-      return 'Use the case selector to try another broken request.'
-    }
-    if (current === 'server') {
-      return serverOn
-        ? 'The server is on. Turn it off, then send.'
-        : 'The server is off. The page is still alive.'
-    }
-    return databaseOn
-      ? 'The database is on. Turn it off, then send.'
-      : 'The database is off. The server is still alive.'
   })
   const completion = $derived(completionFor(chapter.id))
   const nextId = $derived(nextChapterId(current))
@@ -182,7 +156,7 @@
 
   function selectChapter(id: ChapterId) {
     if (!canOpenChapter(id, progress)) {
-      notice = 'Finish the current chapter before opening this one.'
+      notice = 'Finish this chapter first.'
       return
     }
     initChapter(id, completed.includes(id))
@@ -216,7 +190,7 @@
 
   function openSandbox() {
     if (!sandboxUnlocked) {
-      notice = 'Finish all six chapters to open the sandbox.'
+      notice = 'Finish all chapters first.'
       return
     }
     onSandbox()
@@ -224,11 +198,11 @@
 
   function openDepth(next: Exclude<StoryDepth, 'app'>) {
     if (next === 'behind' && !depths.behind) {
-      notice = 'Behind the scenes unlocks after chapter 1.'
+      notice = 'Locked until chapter 1.'
       return
     }
     if (next === 'under' && !depths.under) {
-      notice = 'Under the hood unlocks after chapter 2.'
+      notice = 'Locked until chapter 2.'
       return
     }
     depth = next
@@ -281,7 +255,7 @@
   function addTask() {
     const title = input.trim()
     if (!title) {
-      notice = 'Type a task first.'
+      notice = 'Type a task.'
       return
     }
     const before = clone(tasks)
@@ -374,7 +348,7 @@
     if (serverOn) {
       serverOn = false
       resetAction()
-      notice = 'Server is off. Now send the request.'
+      notice = 'Server off. Send when ready.'
       return
     }
     const before = clone(tasks)
@@ -399,7 +373,7 @@
     if (databaseOn) {
       databaseOn = false
       resetAction()
-      notice = 'Database is off. Now send the request.'
+      notice = 'Database off. Send when ready.'
       return
     }
     const before = clone(tasks)
@@ -427,13 +401,13 @@
     }
     serverOn = !serverOn
     resetAction()
-    notice = serverOn ? 'Server is on.' : 'Server is off.'
+    notice = serverOn ? 'Server on.' : 'Server off.'
   }
 
   function toggleDatabase() {
     databaseOn = !databaseOn
     resetAction()
-    notice = databaseOn ? 'Database is on.' : 'Database is off.'
+    notice = databaseOn ? 'Database on.' : 'Database off.'
   }
 
   function refreshTool() {
@@ -446,7 +420,7 @@
       return
     }
     resetAction()
-    notice = 'Ready to try the chapter again.'
+    notice = 'Chapter reset.'
   }
 
   function primaryAction() {
@@ -471,8 +445,8 @@
         correctId: correct,
         correctNote:
           correct === 'router'
-            ? `The router stopped this request with ${payloadCase.expectedStatus}. No handler ran and the database was not touched.`
-            : `The route matched, so the server handler rejected the payload with ${payloadCase.expectedStatus}. The database was not touched.`,
+            ? `Router: ${payloadCase.expectedStatus}.`
+            : `Server: ${payloadCase.expectedStatus}.`,
       }
     }
     return CHAPTER_CHOICES[current] ?? null
@@ -487,28 +461,28 @@
       const rowId = run?.inserted?.id ?? tasks[0]?.id ?? 1
       return {
         title: 'Task added.',
-        body: `“${storyTitle}” became a row in the database. You followed your own text from the form to storage.`,
+        body: `“${storyTitle}” became row ${rowId}.`,
         receipt: ['POST /tasks', '201 Created', `row ${rowId} · ${storyTitle}`],
       }
     }
     if (id === 'fetch') {
       return {
-        title: 'List rebuilt.',
-        body: 'The browser asked GET /tasks, the server read the rows, and the page rendered the response.',
-        receipt: ['GET /tasks', '200 OK', `${Math.max(1, tasks.length)} ${tasks.length === 1 ? 'row' : 'rows'} returned`],
+        title: 'List loaded.',
+        body: 'The rows came back from the server.',
+        receipt: ['GET /tasks', '200 OK', `${Math.max(1, tasks.length)} ${tasks.length === 1 ? 'row' : 'rows'}`],
       }
     }
     if (id === 'refresh') {
       return {
-        title: 'The database kept it.',
-        body: 'The page reloaded, but the database still had the task. The browser rebuilt the list from GET /tasks.',
+        title: 'Refresh survived.',
+        body: 'The database still had the task.',
         receipt: ['Refresh', 'database storage', 'row still there'],
       }
     }
     if (id === 'payload') {
       return {
-        title: 'The server pushed back.',
-        body: `${payloadCase.label} stopped with ${payloadCase.expectedStatus}. The layer that owns the check rejected it, and the database stayed untouched.`,
+        title: 'Request rejected.',
+        body: `${payloadCase.label} stopped at ${payloadCase.expectedLayer} with ${payloadCase.expectedStatus}.`,
         receipt: [
           `${payloadCase.method} ${payloadCase.path}`,
           `${payloadCase.expectedStatus}`,
@@ -518,14 +492,14 @@
     }
     if (id === 'server') {
       return {
-        title: 'The page stayed up.',
-        body: 'The server was off, so no response came back. The page kept working and the database was never reached.',
+        title: 'No response.',
+        body: 'The request failed. The page stayed up.',
         receipt: ['POST /tasks', 'No response', 'database untouched'],
       }
     }
     return {
-      title: 'The server reported the failure.',
-      body: 'The request reached the server, but the database was unavailable. The server returned 503 and wrote nothing.',
+      title: '503.',
+      body: 'The server could not reach the database.',
       receipt: ['POST /tasks', '503 Service Unavailable', '0 rows written'],
     }
   }
@@ -543,10 +517,6 @@
       503: 'Service Unavailable',
     }
     return `${value.response.status} ${labels[value.response.status] ?? ''}`.trim()
-  }
-
-  function requestBody(value: Run | null): string {
-    return value?.request?.body ?? ''
   }
 
   function responseBody(value: Run | null): string {
@@ -597,13 +567,6 @@
     return 'Database'
   }
 
-  function stageNote(index: number): string {
-    if (index === 0) return 'Your action leaves the page.'
-    if (index === 1) return 'Method, path and your data.'
-    if (index === 2) return 'The handler and its checks.'
-    return 'The row and the durable copy.'
-  }
-
   function pathStatus(id: ChapterId): string {
     if (completed.includes(id)) return 'Done'
     if (id === continueId) return 'Continue'
@@ -614,8 +577,8 @@
     if (sandboxUnlocked) return 'Open sandbox'
     const target = chapterById(continueId)
     return completed.length === 0
-      ? `Start chapter ${target.number}`
-      : `Continue chapter ${target.number}`
+      ? `Start ${target.number}`
+      : `Continue ${target.number}`
   }
 
   function pathButtonAction() {
@@ -760,17 +723,6 @@
           </button>
         </nav>
       {/if}
-      <div class="story-chapter-mini">
-        <span>{completed.length} of 6 complete</span>
-        <div class="story-bars" aria-hidden="true">
-          {#each STORY_CHAPTERS as item, index (item.id)}
-            <span
-              class:is-done={completed.includes(item.id)}
-              class:is-current={item.id === current && !completed.includes(item.id)}
-            ></span>
-          {/each}
-        </div>
-      </div>
     </div>
   </header>
 
@@ -781,16 +733,15 @@
   {#if view === 'path'}
     <main class="story-page story-path-page">
       <div class="story-entry-head">
-        <p class="story-eyebrow">STORY MODE · YOUR OWN TO-DO APP</p>
         <h1>One problem at a time.</h1>
-        <p>Each chapter starts with something your app cannot do yet. You make the move by hand, then see which layer made it happen.</p>
+        <p>Six chapters. You make each move.</p>
       </div>
 
       <div class="story-entry-grid">
         <section class="story-path-card">
           <div class="story-path-head">
-            <div><p class="story-eyebrow">SIX CHAPTERS</p><h2>Your path through the stack</h2></div>
-            <span class="story-chip">{completed.length} of 6 complete</span>
+            <div><h2>Chapters</h2></div>
+            <span class="story-chip">{completed.length}/6</span>
           </div>
           <div class="story-path-list">
             {#each STORY_CHAPTERS as item (item.id)}
@@ -814,7 +765,7 @@
             {/each}
           </div>
           <div class="story-path-foot">
-            <span class="story-muted">Progress saves automatically.</span>
+            <span class="story-muted">Saved</span>
             <button class="story-btn story-btn-primary" type="button" onclick={pathButtonAction}>
               {pathButtonLabel()}
               <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7h9M8 4l3 3-3 3"></path></svg>
@@ -823,24 +774,22 @@
         </section>
 
         <aside class="story-sandbox-card">
-          <p class="story-eyebrow">SANDBOX</p>
-          <h2>{sandboxUnlocked ? 'Everything is open.' : 'The controls you are earning.'}</h2>
-          <p>{sandboxUnlocked ? 'Every scenario, switch and case is available.' : 'Story Mode opens the sandbox one switch at a time, right after the chapter that explains it.'}</p>
+          <h2>Sandbox</h2>
+          <p>{sandboxUnlocked ? 'Everything is open.' : 'Unlocks after chapter 6.'}</p>
           {#if sandboxUnlocked}
             <div class="story-sandbox-list">
               <div class="story-sandbox-item"><span class="story-check">✓</span>All cases</div>
               <div class="story-sandbox-item"><span class="story-check">✓</span>All switches</div>
               <div class="story-sandbox-item"><span class="story-check">✓</span>Three depths</div>
             </div>
-            <button class="story-btn story-btn-primary story-wide" type="button" onclick={openSandbox}>Open sandbox</button>
+            <button class="story-btn story-btn-primary story-wide" type="button" onclick={openSandbox}>Open</button>
           {:else}
             <div class="story-sandbox-list">
-              <div class="story-sandbox-item"><span class="story-lock-small">●</span>Scenario picker</div>
-              <div class="story-sandbox-item"><span class="story-lock-small">●</span>Refresh and storage</div>
-              <div class="story-sandbox-item"><span class="story-lock-small">●</span>Server and database</div>
+              <div class="story-sandbox-item"><span class="story-lock-small">●</span>Scenarios</div>
+              <div class="story-sandbox-item"><span class="story-lock-small">●</span>Switches</div>
+              <div class="story-sandbox-item"><span class="story-lock-small">●</span>Depths</div>
             </div>
-            <button class="story-btn story-wide" type="button" disabled>Sandbox locked</button>
-            <p class="story-sandbox-note">Finish all six chapters to open every scenario and switch.</p>
+            <button class="story-btn story-wide" type="button" disabled>Locked</button>
           {/if}
         </aside>
       </div>
@@ -849,31 +798,18 @@
     <main class="story-page">
       <div class="story-chapter-head">
         <div>
-          <p class="story-eyebrow">CHAPTER {chapter.number} OF 6</p>
+          <p class="story-eyebrow">Chapter {chapter.number} / 6</p>
           <h1>{chapter.title}</h1>
-          <p>{chapter.problem}</p>
         </div>
         <div class="story-head-right">
-          <div class="story-progress">
-            <span class="story-chapter-mini">
-              <span>{completed.length} of 6 complete</span>
-              <div class="story-bars" aria-hidden="true">
-                {#each STORY_CHAPTERS as item (item.id)}
-                  <span class:is-done={completed.includes(item.id)} class:is-current={item.id === current && !completed.includes(item.id)}></span>
-                {/each}
-              </div>
-            </span>
-          </div>
-          <button class="story-link" type="button" onclick={openPath}>All chapters</button>
+          <button class="story-link" type="button" onclick={openPath}>Chapters</button>
         </div>
       </div>
 
       <div class="story-grid">
         <aside class="story-card story-story-card">
-          <p class="story-eyebrow">CHAPTER {chapter.number} · THE PROBLEM</p>
           <h2>{chapter.problem}</h2>
           <p class="story-lead">{chapter.narrative}</p>
-          <div class="story-quote">{chapter.quote}</div>
           <div class="story-steps">
             {#each chapter.steps as label, index (label)}
               <div class="story-step is-{stepStates[index]}">
@@ -882,39 +818,35 @@
               </div>
             {/each}
           </div>
-          <p class="story-foot">Your text is the data. It should appear unchanged at every hop.</p>
         </aside>
 
         <section class="story-work">
           {#if phase === 'done'}
             <section class="story-complete">
               <span class="story-complete-mark" aria-hidden="true">✓</span>
-              <p class="story-eyebrow">CHAPTER {chapter.number} COMPLETE</p>
               <h2>{completion.title}</h2>
               <p>{completion.body}</p>
               <div class="story-receipt is-complete">
-                <p class="story-eyebrow">THE RECEIPT</p>
                 {#each completion.receipt as line, index (line)}
                   <div class="story-receipt-line"><strong>{line}</strong>{#if index === 0}<span class="story-muted">·</span>{/if}</div>
                 {/each}
               </div>
               <div class="story-complete-actions">
                 <button class="story-btn story-btn-primary" type="button" onclick={goNextChapter}>
-                  {nextChapter ? `Next chapter: ${nextChapter.title}` : 'Open sandbox'}
+                  {nextChapter ? `Next: ${nextChapter.title}` : 'Open sandbox'}
                   <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7h9M8 4l3 3-3 3"></path></svg>
                 </button>
-                <button class="story-btn story-btn-quiet" type="button" onclick={openPath}>Back to chapters</button>
+                <button class="story-btn story-btn-quiet" type="button" onclick={openPath}>Chapters</button>
               </div>
             </section>
           {:else}
-            <p class="story-eyebrow">YOUR ACTION</p>
             <div class="story-browser" class:is-compact={phase !== 'start'}>
               <div class="story-browser-bar" aria-hidden="true">
                 <span class="story-dots"><i></i><i></i><i></i></span>
                 <span class="story-url">my-tasks.app</span>
               </div>
               <div class="story-app">
-                <header class="story-app-head"><h2>My tasks</h2><p>One thing at a time.</p></header>
+                <header class="story-app-head"><h2>My tasks</h2></header>
 
                 {#if phase === 'start'}
                   {#if current === 'refresh'}
@@ -923,7 +855,7 @@
                         <label class="story-storage-option" class:is-selected={storage === mode.id}>
                           <input type="radio" name="story-storage" value={mode.id} checked={storage === mode.id} onchange={() => setStorage(mode.id)} />
                           <span class="story-radio" aria-hidden="true"></span>
-                          <span class="story-storage-copy"><strong>{mode.label}</strong><span>{mode.serverCanRead ? 'Server can read it.' : 'Stays in the browser.'}</span></span>
+                          <span class="story-storage-copy"><strong>{mode.label}</strong><span>{mode.serverCanRead ? 'Server' : 'Browser'}</span></span>
                         </label>
                       {/each}
                     </div>
@@ -970,16 +902,14 @@
                     </li>
                   {/each}
                   {#if current === 'fetch' && tasks.length === 0 && !run}
-                    <li class="story-empty">Waiting for the list.</li>
+                    <li class="story-empty">Empty.</li>
                   {/if}
                 </ul>
-                <p class="story-app-note">{appNote}</p>
               </div>
             </div>
 
             {#if run || refreshed}
               <div class="story-receipt">
-                <p class="story-eyebrow">ON THE WIRE</p>
                 {#if run?.request}
                   <div class="story-receipt-line"><strong>{run.request.method} {run.request.path}</strong><span class:is-bad={run.failure === 'database_error' || run.failure === 'validation' || run.failure === 'invalid_json' || run.failure === 'not_found' || run.failure === 'method_not_allowed'}>{statusLabel(run)}</span></div>
                   {#if run.request.body}<div class="story-receipt-line is-body">{run.request.body}</div>{/if}
@@ -994,15 +924,15 @@
 
             {#if current === 'refresh' && refreshed && phase === 'start'}
               <div class="story-refresh-result" role="status" aria-live="polite">
-                <strong>{storageMode.survivesRefresh ? 'The task survived.' : 'The task disappeared.'}</strong>
+                <strong>{storageMode.survivesRefresh ? 'Survived.' : 'Gone.'}</strong>
                 <p>{storageMode.result}</p>
-                {#if storage !== 'database'}<button class="story-text-link" type="button" onclick={() => setStorage('database')}>Try the database</button>{/if}
+                {#if storage !== 'database'}<button class="story-text-link" type="button" onclick={() => setStorage('database')}>Use database</button>{/if}
               </div>
             {/if}
 
             {#if current === 'payload' && phase === 'choice'}
               <div class="story-case-picker is-after" aria-label="Try another broken request">
-                <span class="story-muted">Try another:</span>
+                <span class="story-muted">Try:</span>
                 {#each PAYLOAD_CASES as item (item.id)}
                   <button
                     class="story-case-btn"
@@ -1019,7 +949,6 @@
             {#if phase === 'choice' && choice}
               <StoryChoice
                 prompt={choice.prompt}
-                lead={choice.lead}
                 options={choice.options}
                 selectedId={selectedChoice}
                 checked={choiceChecked}
@@ -1030,7 +959,7 @@
                 onCheck={checkChoice}
                 onContinue={continueChoice}
                 onRetry={retryChoice}
-                continueLabel={`Finish chapter ${chapter.number}`}
+                continueLabel={`Finish ${chapter.number}`}
               />
             {/if}
           {/if}
@@ -1039,52 +968,45 @@
         <aside class="story-side">
           {#if phase === 'done'}
             <section class="story-unlock-card">
-              <p class="story-eyebrow">{sandboxUnlocked ? 'ALL CHAPTERS COMPLETE' : 'UNLOCKED'}</p>
-              <h2>{sandboxUnlocked ? 'The sandbox is open.' : `One layer deeper.`}</h2>
+              <h2>{sandboxUnlocked ? 'Sandbox open' : 'Unlocked'}</h2>
               <div class="story-unlock-list">
                 {#if sandboxUnlocked}
-                  <div class="story-unlock-item"><span class="story-check">✓</span><span><strong>Every scenario</strong><span>All existing cases and new failure cases.</span></span></div>
-                  <div class="story-unlock-item"><span class="story-check">✓</span><span><strong>Every switch</strong><span>Server, database, storage and refresh.</span></span></div>
-                  <div class="story-unlock-item"><span class="story-check">✓</span><span><strong>Three depths</strong><span>Use the app, behind the scenes, under the hood.</span></span></div>
+                  <div class="story-unlock-item"><span class="story-check">✓</span><span><strong>All cases</strong></span></div>
+                  <div class="story-unlock-item"><span class="story-check">✓</span><span><strong>All switches</strong></span></div>
+                  <div class="story-unlock-item"><span class="story-check">✓</span><span><strong>All depths</strong></span></div>
                 {:else}
                   <div class="story-unlock-item"><span class="story-check">✓</span><span><strong>{chapter.unlockTitle}</strong><span>{chapter.unlockDetail}</span></span></div>
-                  <div class="story-unlock-item"><span class="story-check">✓</span><span><strong>Progress saved</strong><span>Continue from the chapters screen anytime.</span></span></div>
                 {/if}
               </div>
               <p class="story-unlock-next">
                 {#if nextChapter}
                   Next: <strong>{nextChapter.title}</strong>.
                 {:else}
-                  The sandbox is ready when you are.
+                  Ready.
                 {/if}
               </p>
             </section>
           {:else}
             <section class="story-path-card is-side">
-              <div class="story-path-head"><div><p class="story-eyebrow">YOUR PATH</p><h2>One request, four stops</h2></div><span class="story-chip">Step {currentStageIndex() + 1}</span></div>
+              <div class="story-path-head"><div><h2>Path</h2></div><span class="story-chip">Step {currentStageIndex() + 1}</span></div>
               <div class="story-stages">
                 {#each [0, 1, 2, 3] as index (index)}
                   <div class="story-stage is-{stageState(index)}">
                     <span class="story-stage-dot">{#if stageState(index) === 'done'}✓{:else}{index + 1}{/if}</span>
-                    <span class="story-stage-copy"><span>{stageLabel(index)}</span><small>{stageNote(index)}</small></span>
+                    <span class="story-stage-copy"><span>{stageLabel(index)}</span></span>
                     {#if stageState(index) === 'current'}<span class="story-stage-meta">Here</span>{/if}
                   </div>
                 {/each}
               </div>
-              <p class="story-path-note">{run ? 'The request is moving through the stack.' : 'The browser has your text. The next hop is up to you.'}</p>
             </section>
 
             <section class="story-tip-card">
-              <p class="story-eyebrow">YOUR DATA</p>
-              <h2>{current === 'fetch' ? 'The list you asked for' : current === 'payload' ? 'The broken request' : 'The same text, everywhere'}</h2>
-              <p>{current === 'fetch' ? 'The server reads these rows and sends them back.' : current === 'payload' ? 'The request shape tells the router and handler what to do.' : 'You typed this. It is the value that travels in the request and becomes the row.'}</p>
+              <p class="story-eyebrow">{current === 'fetch' ? 'Query' : current === 'payload' ? 'Request' : 'Task'}</p>
               <div class="story-data">
                 {#if current === 'fetch'}
                   GET /tasks
                 {:else if current === 'payload'}
                   {payloadCase.method} {payloadCase.path}
-                {:else if current === 'server' || current === 'database'}
-                  "{input || storyTitle}"
                 {:else}
                   "{input || storyTitle}"
                 {/if}
@@ -1113,17 +1035,16 @@
       <button class="story-depth-scrim" type="button" tabindex="-1" aria-label="Close depth details" onclick={closeDepth}></button>
       <div class="story-depth-panel" role="dialog" aria-modal="true" aria-label="Depth details" tabindex="-1">
         <header class="story-depth-head">
-          <div><p class="story-eyebrow">{depth === 'behind' ? 'BEHIND THE SCENES' : 'UNDER THE HOOD'}</p><h2>{depth === 'behind' ? 'The request in motion' : 'The raw receipt'}</h2></div>
-          <button class="story-depth-close" type="button" aria-label="Close depth details" onclick={closeDepth}>×</button>
+          <div><h2>{depth === 'behind' ? 'Request path' : 'Raw'}</h2></div>
+          <button class="story-depth-close" type="button" aria-label="Close" onclick={closeDepth}>×</button>
         </header>
         <div class="story-depth-body">
           {#if depth === 'behind'}
-            <p class="story-depth-intro">Use the story you just played, then look at the layer that did the work.</p>
             <div class="story-depth-stages">
               {#each [0, 1, 2, 3] as index (index)}
                 <div class="story-depth-stage is-{stageState(index)}">
                   <span>{index + 1}</span>
-                  <div><strong>{stageLabel(index)}</strong><p>{stageNote(index)}</p></div>
+                  <div><strong>{stageLabel(index)}</strong></div>
                 </div>
               {/each}
             </div>
@@ -1131,20 +1052,19 @@
               <div class="story-depth-mono"><strong>{run.request?.method ?? 'Request'} {run.request?.path ?? ''}</strong><br>{statusLabel(run)}</div>
             {/if}
           {:else}
-            <p class="story-depth-intro">The exact request and response for this chapter.</p>
             {#if run?.request}
-              <div class="story-depth-label">THE REQUEST</div>
+              <div class="story-depth-label">Request</div>
               <pre class="story-depth-pre">{run.request.method} {run.request.path} HTTP/1.1
 Host: my-tasks.app{#if run.request.body}
 Content-Type: application/json
 
 {run.request.body}{/if}</pre>
-              <div class="story-depth-label">THE RESPONSE</div>
+              <div class="story-depth-label">Response</div>
               <pre class="story-depth-pre">{run.response ? `HTTP/1.1 ${statusLabel(run)}\n${responseBody(run)}` : 'No response came back.'}</pre>
             {:else}
-              <p class="story-depth-empty">Make the move first, then this view will have a request to show.</p>
+              <p class="story-depth-empty">Send a request first.</p>
             {/if}
-            <div class="story-depth-label">THE TASKS TABLE</div>
+            <div class="story-depth-label">Rows</div>
             <div class="story-depth-table">
               {#each tasks as task (task.id)}<div><span>{task.id}</span><span>{task.title}</span></div>{/each}
               {#if tasks.length === 0}<div class="story-depth-empty-row">No rows.</div>{/if}
