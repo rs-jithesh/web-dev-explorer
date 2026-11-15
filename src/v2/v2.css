@@ -107,6 +107,48 @@
   color: #fff;
 }
 
+.v2-mental-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 30px;
+  padding: 0 9px;
+  border: 1px solid var(--v2-border);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--v2-body);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.v2-mental-btn:hover {
+  border-color: #bdbab0;
+  color: var(--v2-ink);
+}
+
+.v2-mental-btn.is-open {
+  border-color: var(--v2-blue-line);
+  background: var(--v2-blue-soft);
+  color: var(--v2-blue);
+}
+
+.v2-mental-count {
+  padding: 2px 4px;
+  border-radius: 3px;
+  background: var(--v2-blue);
+  color: #fff;
+  font-family: var(--mono, 'JetBrains Mono', monospace);
+  font-size: 8px;
+  line-height: 1.2;
+}
+
+.v2-mental-btn:focus-visible {
+  outline: 2px solid var(--v2-blue);
+  outline-offset: 2px;
+}
+
 .v2-main {
   flex: 1;
   min-width: 0;
@@ -1203,6 +1245,13 @@
   .v2-topbar .version-switch {
     order: 2;
     margin-left: auto;
+  }
+
+  .v2-mental-btn {
+    order: 2;
+    margin-left: auto;
+    padding: 0 7px;
+    font-size: 10px;
   }
 
   .v2-depth {

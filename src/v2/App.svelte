@@ -21,8 +21,10 @@
   } from './lessons'
   import { termsForStep } from './glossary'
   import { evidenceFor } from './evidence'
+  import { MENTAL_QUESTIONS, type MentalQuestion } from './questions'
   import { v2Prompt } from './tutor'
   import EvidenceCard from './EvidenceCard.svelte'
+  import QuestionDrawer from './QuestionDrawer.svelte'
   import StepRail from './StepRail.svelte'
   import StoryCard from './StoryCard.svelte'
   import TaskApp from './TaskApp.svelte'
@@ -168,6 +170,9 @@
   )
   let appError = $state('')
   let selectedTerm = $state<string | null>(null)
+  let mentalOpen = $state(false)
+  let answeredCount = $state(0)
+  let mentalButton: HTMLButtonElement | undefined = $state()
   let run = $state<Run | null>(
     boot.depth > 1
       ? makeRun(bootLesson, bootCase, cloneTasks(bootLesson.startingTasks))
@@ -395,6 +400,40 @@
     selectedTerm = null
   }
 
+  function closeMentalModel() {
+    mentalOpen = false
+    tick().then(() => mentalButton?.focus())
+  }
+
+  function openQuestionContext(question: MentalQuestion) {
+    const nextLesson = lessonById(question.lessonId)
+    const item = lessonCase(nextLesson, question.caseId)
+    const before = cloneTasks(nextLesson.startingTasks)
+    const next = makeRun(nextLesson, item, before)
+
+    lessonId = nextLesson.id
+    caseId = item.id
+    tasksBefore = before
+    tasks =
+      nextLesson.appMode === 'load'
+        ? []
+        : next.response?.status === 201
+          ? next.tasksAfter
+          : cloneTasks(nextLesson.startingTasks)
+    appInput = inputTitleFromRequest(item.request.body, nextLesson.inputDefault)
+    requestTitle = titleFromRequest(item.request.body, nextLesson.inputDefault)
+    appError = ''
+    selectedTerm = null
+    run = next
+    stepIndex = Math.max(0, Math.min(question.stepIndex, 4))
+    depth = 3
+  }
+
+  function showQuestionInStep(question: MentalQuestion) {
+    openQuestionContext(question)
+    closeMentalModel()
+  }
+
   async function askTerm(term: string) {
     selectedTerm = term
     if (depth !== 3) depth = 3
@@ -431,6 +470,14 @@
   }
 
   function onKeydown(event: KeyboardEvent) {
+    if (mentalOpen) {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        closeMentalModel()
+      }
+      return
+    }
+
     const target = event.target as HTMLElement | null
     if (
       target?.closest(
@@ -530,6 +577,22 @@
         </button>
       {/each}
     </nav>
+
+    <button
+      class="v2-mental-btn"
+      class:is-open={mentalOpen}
+      type="button"
+      aria-haspopup="dialog"
+      aria-expanded={mentalOpen}
+      aria-controls="v2-mental-model"
+      bind:this={mentalButton}
+      onclick={() => (mentalOpen = true)}
+    >
+      <span class="v2-mental-label">Test my mental model</span>
+      <span class="v2-mental-count" aria-hidden="true">
+        {answeredCount}/{MENTAL_QUESTIONS.length}
+      </span>
+    </button>
 
     <VersionToggle {view} onChange={onChangeView} />
   </header>
@@ -658,6 +721,14 @@
   <footer class="v2-footer">
     <span class="v2-footer-hint">Press <kbd>1</kbd>, <kbd>2</kbd> or <kbd>3</kbd> to change depth</span>
   </footer>
+
+  <QuestionDrawer
+    open={mentalOpen}
+    onClose={closeMentalModel}
+    onOpenQuestion={openQuestionContext}
+    onShowInStep={showQuestionInStep}
+    bind:answeredCount
+  />
 
   <p class="v2-sr-only" aria-live="polite">{liveText}</p>
 </div>

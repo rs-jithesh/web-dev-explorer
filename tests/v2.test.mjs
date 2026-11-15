@@ -8,6 +8,13 @@ import {
 } from '../src/v2/content.ts'
 import { evidenceFor, evidenceForStep } from '../src/v2/evidence.ts'
 import { EXPLORER_LESSONS, lessonById, storyFor } from '../src/v2/lessons.ts'
+import {
+  MENTAL_QUESTIONS,
+  QUESTION_GROUPS,
+  nextQuestion,
+  questionById,
+  questionNumber,
+} from '../src/v2/questions.ts'
 import { v2Prompt } from '../src/v2/tutor.ts'
 
 function createRun(title = DEFAULT_TITLE) {
@@ -220,4 +227,33 @@ test('route, timeout and blocked cases never report a database write', () => {
   assert.equal(notFound.reached.database, false)
   assert.equal(timeout.reached.database, false)
   assert.equal(blocked.reached.database, false)
+})
+
+test('mental model questions cover every lesson and keep one correct option', () => {
+  assert.equal(MENTAL_QUESTIONS.length, 8)
+  assert.equal(new Set(MENTAL_QUESTIONS.map((question) => question.id)).size, 8)
+  assert.deepEqual(
+    [...new Set(MENTAL_QUESTIONS.map((question) => question.group))],
+    [...QUESTION_GROUPS],
+  )
+
+  for (const [index, question] of MENTAL_QUESTIONS.entries()) {
+    const lesson = lessonById(question.lessonId)
+    assert.equal(questionNumber(question.id), index + 1)
+    assert.ok(lesson.cases.some((item) => item.id === question.caseId))
+    assert.ok(question.stepIndex >= 0 && question.stepIndex <= 4)
+    assert.equal(question.options.length, 3)
+    assert.equal(
+      question.options.filter((option) => option.correct === true).length,
+      1,
+    )
+    assert.ok(question.correctNote.length > 20)
+    assert.ok(question.wrongNote.length > 20)
+    assert.ok(question.evidence.items.length > 0)
+  }
+
+  assert.equal(questionById('add-guard').group, 'Add a task')
+  assert.equal(questionById('refresh-memory').lessonId, 'refresh')
+  assert.equal(nextQuestion('add-guard')?.id, 'add-id')
+  assert.equal(nextQuestion('ai-validation'), null)
 })
