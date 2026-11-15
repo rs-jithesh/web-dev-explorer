@@ -159,7 +159,11 @@
       notice = 'Finish this chapter first.'
       return
     }
-    initChapter(id, completed.includes(id))
+    initChapter(id, false)
+  }
+
+  function redoChapter() {
+    initChapter(current, false)
   }
 
   function continueStory() {
@@ -568,7 +572,7 @@
   }
 
   function pathStatus(id: ChapterId): string {
-    if (completed.includes(id)) return 'Done'
+    if (completed.includes(id)) return 'Redo'
     if (id === continueId) return 'Continue'
     return 'Later'
   }
@@ -836,6 +840,7 @@
                   {nextChapter ? `Next: ${nextChapter.title}` : 'Open sandbox'}
                   <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7h9M8 4l3 3-3 3"></path></svg>
                 </button>
+                <button class="story-btn" type="button" onclick={redoChapter}>Redo</button>
                 <button class="story-btn story-btn-quiet" type="button" onclick={openPath}>Chapters</button>
               </div>
             </section>
